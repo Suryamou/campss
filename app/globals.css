@@ -24,3 +24,38 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Perbaiki visibilitas teks agar lebih jelas di seluruh halaman */
+.text-gray-300 {
+  color: #6b7280 !important;
+}
+
+.text-gray-400 {
+  color: #4b5563 !important;
+}
+
+.text-gray-500 {
+  color: #374151 !important;
+}
+
+.text-white\/40,
+.text-white\/50,
+.text-white\/55,
+.text-white\/60,
+.text-white\/65,
+.text-white\/70,
+.text-white\/80 {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+input,
+textarea,
+select {
+  color: #111827;
+}
+
+input::placeholder,
+textarea::placeholder,
+select::placeholder {
+  color: #6b7280;
+}
