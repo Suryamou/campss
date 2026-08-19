@@ -10,103 +10,103 @@ const dataVegetasi = [
     id: 1,
     nama: "Kopi Arabika",
     namaLatin: "Coffea arabica",
-    kategori: "Flora Pegunungan",
+    kategori: "Komoditas Unggulan",
     foto: "/images/vegetasi/kopi-arabika.jpg",
     deskripsi:
-      "Ditemukan di sepanjang jalur pendakian Gunung Prau via Campurejo. Kopi Arabika bukan sekadar tanaman biasa, melainkan bagian dari ekosistem dan kehidupan masyarakat lokal.",
+      "Ditemukan melimpah di sepanjang perkebunan lereng Gunung Prau via Campurejo. Kopi Arabika merupakan komoditas utama masyarakat lokal.",
     peran:
-      "Menjaga stabilitas tanah di lereng gunung dan berfungsi sebagai penyerap karbon yang sangat efektif, membantu menyeimbangkan iklim mikro di area pegunungan.",
+      "Menjaga stabilitas tanah lereng dari bahaya erosi serta berfungsi sebagai tanaman penyerap karbon yang sangat efektif.",
     lokasi:
-      "Dapat dijumpai di area sekitar Pos 1 hingga Pos 2 jalur pendakian Campurejo.",
+      "Tersebar di area perkebunan warga dari Pos 1 hingga mendekati batas hutan pendakian.",
     manfaat:
-      "Merupakan sumber ekonomi utama bagi masyarakat lokal Campurejo dan diolah menjadi minuman khas yang menyenangkan bagi para pendaki.",
+      "Menjadi penopang ekonomi utama warga Campurejo dan disajikan sebagai minuman hangat khas penyambut pendaki.",
     fakta:
-      "Kopi Arabika yang ditanam di ketinggian Prau memiliki profil rasa yang sangat unik. Hal ini dipengaruhi oleh kombinasi tanah vulkanik yang subur dan suhu udara pegunungan yang sejuk.",
+      "Kombinasi tanah vulkanik subur dan udara dingin Temanggung memberikan cita rasa manis alami (caramelized note) pada biji kopinya.",
   },
   {
     id: 2,
-    nama: "Vegetasi 02",
-    namaLatin: "Nama ilmiah",
-    kategori: "Flora Pegunungan",
-    foto: "/images/vegetasi/vegetasi-02.jpg",
+    nama: "Jambu Air",
+    namaLatin: "Syzygium aqueum",
+    kategori: "Flora Pekarangan & Perkebunan",
+    foto: "/images/vegetasi/jambuair.jpg",
     deskripsi:
-      "Informasi mengenai vegetasi ini akan ditampilkan berdasarkan dokumentasi dan data yang tersedia di kawasan Gunung Prau via Campurejo.",
+      "Banyak dibudidayakan warga Desa Campurejo di pekarangan rumah dan batas ladang lereng gunung. Tanaman ini tumbuh subur di udara sejuk pegunungan.",
     peran:
-      "Informasi mengenai peran ekologis vegetasi akan ditampilkan berdasarkan data yang tersedia.",
+      "Membantu menjaga kelembapan tanah pemukiman serta menyerap air hujan untuk mencegah erosi permukaan di area pemukiman lereng.",
     lokasi:
-      "Lokasi vegetasi akan ditampilkan berdasarkan dokumentasi kawasan pendakian.",
+      "Area pemukiman warga Desa Campurejo dan pekarangan batas awal pendakian.",
     manfaat:
-      "Manfaat vegetasi bagi lingkungan maupun masyarakat sekitar akan dijelaskan di sini.",
+      "Buahnya kaya akan air dan vitamin C, menjadi penambah kesegaran alami bagi warga maupun pendaki yang singgah di desa.",
     fakta:
-      "Fakta menarik mengenai vegetasi ini akan ditambahkan berdasarkan dokumentasi yang tersedia.",
+      "Jambu air yang tumbuh di suhu sejuk Campurejo memiliki tekstur daging yang lebih renyah dan kadar air yang sangat tinggi.",
   },
   {
     id: 3,
-    nama: "Vegetasi 03",
-    namaLatin: "Nama ilmiah",
-    kategori: "Flora Pegunungan",
-    foto: "/images/vegetasi/vegetasi-03.jpg",
+    nama: "Tembakau Temanggung",
+    namaLatin: "Nicotiana tabacum",
+    kategori: "Komoditas Pertanian",
+    foto: "/images/vegetasi/tembakau.jpeg",
     deskripsi:
-      "Informasi mengenai vegetasi ini akan ditampilkan berdasarkan dokumentasi dan data yang tersedia di kawasan Gunung Prau via Campurejo.",
+      "Tanaman ikonik Kabupaten Temanggung yang menghiasi terasering pertanian warga Desa Campurejo di kaki Gunung Prau.",
     peran:
-      "Informasi mengenai peran ekologis vegetasi akan ditampilkan berdasarkan data yang tersedia.",
+      "Memaksimalkan pemanfaatan lahan terasering warga dan menguatkan struktur struktur tanah ladang lereng gunung.",
     lokasi:
-      "Lokasi vegetasi akan ditampilkan berdasarkan dokumentasi kawasan pendakian.",
+      "Hamparan ladang terasering di sekitar Desa Campurejo sebelum memasuki gerbang hutan.",
     manfaat:
-      "Manfaat vegetasi bagi lingkungan maupun masyarakat sekitar akan dijelaskan di sini.",
+      "Warisan budaya pertanian dan sumber mata pencaharian tradisi turun-temurun masyarakat pegunungan Temanggung.",
     fakta:
-      "Fakta menarik mengenai vegetasi ini akan ditambahkan berdasarkan dokumentasi yang tersedia.",
+      "Sinar matahari pagi dan terpaan angin sejuk lereng Prau menghasilkan daun tembakau dengan aroma dan kualitas tertinggi.",
   },
   {
     id: 4,
-    nama: "Vegetasi 04",
-    namaLatin: "Nama ilmiah",
-    kategori: "Flora Pegunungan",
-    foto: "/images/vegetasi/vegetasi-04.jpg",
+    nama: "Bunga Edelweis",
+    namaLatin: "Anaphalis javanica",
+    kategori: "Flora Endemik Pegunungan",
+    foto: "/images/vegetasi/edelweis.jpg",
     deskripsi:
-      "Informasi mengenai vegetasi ini akan ditampilkan berdasarkan dokumentasi dan data yang tersedia di kawasan Gunung Prau via Campurejo.",
+      "Bunga abadi khas pegunungan Indonesia yang tumbuh alami dan dilindungi di kawasan konservasi puncak Gunung Prau.",
     peran:
-      "Informasi mengenai peran ekologis vegetasi akan ditampilkan berdasarkan data yang tersedia.",
+      "Sebagai tanaman pelopor (pioneer) yang mampu hidup di tanah tandus pegunungan serta mencegah erosi di area puncak.",
     lokasi:
-      "Lokasi vegetasi akan ditampilkan berdasarkan dokumentasi kawasan pendakian.",
+      "Area sabana dan lereng terbuka bagian atas Gunung Prau.",
     manfaat:
-      "Manfaat vegetasi bagi lingkungan maupun masyarakat sekitar akan dijelaskan di sini.",
+      "Menjaga keseimbangan ekosistem puncak dan menyediakan nektar bagi serangga endemik pegunungan.",
     fakta:
-      "Fakta menarik mengenai vegetasi ini akan ditambahkan berdasarkan dokumentasi yang tersedia.",
+      "Hormon etilen pada bunga Edelweis mencegah kelopaknya gugur, sehingga bunganya tampak abadi dan tidak mudah layu.",
   },
   {
     id: 5,
-    nama: "Vegetasi 05",
-    namaLatin: "Nama ilmiah",
-    kategori: "Flora Pegunungan",
-    foto: "/images/vegetasi/vegetasi-05.jpg",
+    nama: "Cemara Gunung",
+    namaLatin: "Casuarina junghuhniana",
+    kategori: "Pohon Hutan Pegunungan",
+    foto: "/images/vegetasi/surya.jpeg",
     deskripsi:
-      "Informasi mengenai vegetasi ini akan ditampilkan berdasarkan dokumentasi dan data yang tersedia di kawasan Gunung Prau via Campurejo.",
+      "Pohon tinggi menjulang yang mendominasi kawasan hutan montana di sepanjang jalur pendakian Gunung Prau.",
     peran:
-      "Informasi mengenai peran ekologis vegetasi akan ditampilkan berdasarkan data yang tersedia.",
+      "Penahan angin keras (windbreaker), pengikat air tanah alami, serta penyedia habitat fauna pegunungan.",
     lokasi:
-      "Lokasi vegetasi akan ditampilkan berdasarkan dokumentasi kawasan pendakian.",
+      "Kawasan Hutan Pos 2 hingga menjelang area vegetasi pendek puncak Gunung Prau.",
     manfaat:
-      "Manfaat vegetasi bagi lingkungan maupun masyarakat sekitar akan dijelaskan di sini.",
+      "Memberikan naungan sejuk sepanjang jalur trek serta menjaga kerapatan struktur tanah hutan.",
     fakta:
-      "Fakta menarik mengenai vegetasi ini akan ditambahkan berdasarkan dokumentasi yang tersedia.",
+      "Daun cemara gunung berbentuk jarum halus yang berfungsi mengurangi penguapan air di tengah cuaca dingin ekstrem.",
   },
   {
     id: 6,
-    nama: "Vegetasi 06",
-    namaLatin: "Nama ilmiah",
-    kategori: "Flora Pegunungan",
-    foto: "/images/vegetasi/vegetasi-06.jpg",
+    nama: "Bunga Hortensia (Panca Warna)",
+    namaLatin: "Hydrangea macrophylla",
+    kategori: "Tanaman Hias Pegunungan",
+    foto: "/images/vegetasi/surya.jpeg",
     deskripsi:
-      "Informasi mengenai vegetasi ini akan ditampilkan berdasarkan dokumentasi dan data yang tersedia di kawasan Gunung Prau via Campurejo.",
+      "Tanaman hias dengan kelopak bunga besar yang mekar indah di pekarangan rumah warga dan tepi jalan Desa Campurejo.",
     peran:
-      "Informasi mengenai peran ekologis vegetasi akan ditampilkan berdasarkan data yang tersedia.",
+      "Menjaga kelembapan tanah mikro desa dan menjadi penarik polinator alami seperti lebah pegunungan.",
     lokasi:
-      "Lokasi vegetasi akan ditampilkan berdasarkan dokumentasi kawasan pendakian.",
+      "Sepanjang jalan utama Desa Campurejo dan taman sekitar area Basecamp.",
     manfaat:
-      "Manfaat vegetasi bagi lingkungan maupun masyarakat sekitar akan dijelaskan di sini.",
+      "Memperindah lanskap desa wisata Campurejo serta menyambut kedatangan para pendaki.",
     fakta:
-      "Fakta menarik mengenai vegetasi ini akan ditambahkan berdasarkan dokumentasi yang tersedia.",
+      "Warna kelopak bunga Hortensia dapat berubah-ubah (biru, ungu, merah muda) tergantung pada tingkat keasaman (pH) tanahnya.",
   },
 ];
 

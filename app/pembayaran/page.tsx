@@ -92,6 +92,40 @@ export default function PembayaranPage() {
                 Basecamp Campurejo.
               </p>
 
+              {/* QRIS */}
+              <div className="mt-6 rounded-xl border-2 border-[#17634a] bg-[#f2f8f5] p-5 text-center">
+                <div className="flex items-center justify-between border-b border-[#dcece5] pb-3">
+                  <div className="text-lg font-black tracking-tight text-[#063d2b]">
+                    QRIS <span className="text-xs font-normal text-gray-500">National QR</span>
+                  </div>
+                  <span className="rounded-full bg-red-100 px-2.5 py-0.5 text-[10px] font-bold text-red-600">
+                    GPN
+                  </span>
+                </div>
+
+                <div className="my-4 flex justify-center">
+                  <div className="relative rounded-xl border border-[#dcece5] bg-white p-3 shadow-sm">
+                    <img
+                      src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=CAMPSS-20260812-001"
+                      alt="QRIS Basecamp Campurejo"
+                      className="h-44 w-44 object-contain"
+                    />
+                    <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-[#063d2b] text-xs font-bold text-white shadow-md">
+                        C
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <p className="text-xs font-bold uppercase text-[#063d2b]">
+                  NMK: Basecamp Prau via Campurejo
+                </p>
+                <p className="mt-1 text-[11px] text-gray-500">
+                  Scan dengan GoPay, OVO, DANA, ShopeePay, BCA, Mandiri, BRI, dll.
+                </p>
+              </div>
+
               {/* DANA */}
               <div className="mt-6 rounded-xl border border-[#dcece5] bg-[#f8fcfa] p-5">
 
