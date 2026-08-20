@@ -1,34 +1,67 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { ArrowUpRight, ClipboardList } from "lucide-react";
 
 export default function Footer() {
+  const pathname = usePathname();
+
   return (
     <footer className="w-full bg-white font-sans mt-16">
-      
-      {/* 1. BANNER PANDUAN BOOKING */}
-      <div className="border-y border-[#dcece5] bg-[#f2f8f5]">
-        <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-5 text-center md:text-left">
-            <div className="hidden sm:flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#063d2b] text-white text-2xl shadow-md">
-              📋
-            </div>
-            <div>
-              <h3 className="text-xl md:text-2xl font-bold text-[#063d2b]">
-                Panduan Booking Pendakian
-              </h3>
-              <p className="text-sm text-emerald-800/80 mt-1">
-                Lihat tata cara dan alur pendaftaran pendakian Gunung Prau via Campurejo selengkapnya.
-              </p>
-            </div>
-          </div>
+      {pathname === "/" && (
+        <>
+          {/* 1. BANNER PANDUAN BOOKING */}
+          <section className="border-y border-[#dcece5] bg-[#f4f1eb] px-6 py-12 md:py-16">
+            <div className="mx-auto grid max-w-7xl overflow-hidden rounded-2xl bg-[#063d2b] shadow-[0_18px_45px_rgba(6,61,43,0.14)] md:grid-cols-[0.8fr_1.2fr]">
+              <div className="flex flex-col justify-between gap-8 p-7 text-white md:p-10">
+                <div>
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#d8efe4] text-[#063d2b]">
+                    <ClipboardList size={24} strokeWidth={1.8} />
+                  </div>
+                  <p className="mt-8 text-xs font-semibold uppercase tracking-[0.2em] text-[#a9d8c4]">
+                    Sebelum berangkat
+                  </p>
+                  <h2 className="mt-3 max-w-sm text-2xl font-bold leading-tight md:text-3xl">
+                    Booking pendakian tanpa bingung.
+                  </h2>
+                </div>
+                <p className="max-w-sm text-sm leading-6 text-white/75">
+                  Ikuti alur pendaftaran CAMPSS dari cek kuota sampai tiket siap digunakan di basecamp.
+                </p>
+              </div>
 
-          <Link
-            href="/panduan"
-            className="shrink-0 px-6 py-3 rounded-xl bg-[#063d2b] hover:bg-[#17634a] text-white text-sm font-semibold transition-all shadow-md shadow-emerald-900/10 hover:shadow-lg"
-          >
-            Lihat Panduan
-          </Link>
-        </div>
-      </div>
+              <div className="bg-white p-7 md:p-10">
+                <div className="grid gap-6 sm:grid-cols-3">
+                  <div>
+                    <span className="text-sm font-bold text-[#17634a]">01</span>
+                    <h3 className="mt-3 text-sm font-bold text-[#063d2b]">Cek kuota</h3>
+                    <p className="mt-2 text-xs leading-5 text-gray-500">Pilih tanggal dan lihat ketersediaan pendaki.</p>
+                  </div>
+                  <div>
+                    <span className="text-sm font-bold text-[#17634a]">02</span>
+                    <h3 className="mt-3 text-sm font-bold text-[#063d2b]">Isi data</h3>
+                    <p className="mt-2 text-xs leading-5 text-gray-500">Lengkapi data rombongan sesuai identitas.</p>
+                  </div>
+                  <div>
+                    <span className="text-sm font-bold text-[#17634a]">03</span>
+                    <h3 className="mt-3 text-sm font-bold text-[#063d2b]">Bayar & berangkat</h3>
+                    <p className="mt-2 text-xs leading-5 text-gray-500">Selesaikan pembayaran dan simpan e-tiket.</p>
+                  </div>
+                </div>
+
+                <Link
+                  href="/panduan"
+                  className="mt-8 inline-flex items-center gap-2 border-b-2 border-[#17634a] pb-1 text-sm font-bold text-[#063d2b] transition-colors hover:border-[#063d2b] hover:text-[#17634a]"
+                >
+                  Baca panduan lengkap
+                  <ArrowUpRight size={17} strokeWidth={2.2} />
+                </Link>
+              </div>
+            </div>
+          </section>
+        </>
+      )}
 
       {/* 2. FOOTER UTAMA */}
       <div className="max-w-7xl mx-auto px-6 py-12">
@@ -92,7 +125,7 @@ export default function Footer() {
                 <svg className="w-5 h-5 mt-0.5 text-[#063d2b] shrink-0" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12.031 2C6.486 2 2 6.488 2 12.035c0 1.767.461 3.493 1.336 5.01L2 22l5.121-1.341c1.458.799 3.109 1.22 4.909 1.22 5.545 0 10.031-4.488 10.031-10.035C22.062 6.488 17.576 2 12.031 2zm0 18.151c-1.488 0-2.946-.398-4.225-1.155l-.303-.178-3.136.822.837-3.056-.196-.312C4.161 14.869 3.69 13.473 3.69 12.035c0-4.606 3.748-8.354 8.341-8.354 4.593 0 8.341 3.748 8.341 8.354 0 4.606-3.748 8.354-8.341 8.354zm4.582-6.26c-.251-.126-1.486-.734-1.716-.818-.231-.084-.399-.126-.567.126-.168.252-.647.818-.794.985-.147.168-.294.189-.545.063-1.045-.526-1.854-1.002-2.569-1.936-.184-.241.183-.223.541-.937.084-.168.042-.315-.021-.441-.063-.126-.567-1.366-.777-1.87-.205-.494-.413-.427-.567-.435l-.483-.01c-.168 0-.441.063-.672.315-.231.252-.882.862-.882 2.1 0 1.24.903 2.438 1.029 2.606.126.168 1.777 2.711 4.306 3.803 1.543.666 2.164.717 2.923.606.634-.093 1.486-.607 1.696-1.194.21-.588.21-1.092.147-1.194-.063-.105-.231-.168-.483-.294z" />
                 </svg>
-                <span>+62 811-0000-0000</span>
+                <span>+62 856 4265 0858</span>
               </li>
 
         
@@ -101,7 +134,7 @@ export default function Footer() {
             {/* Instagram */}
             <div className="flex items-center gap-3">
               <a
-                href="#"
+                href="https://www.instagram.com/prau_via_campurejo?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==&igsi=ZDNlZDc0MzIxNw=="
                 aria-label="Instagram CAMPSS"
                 className="flex h-10 w-10 items-center justify-center rounded-full border border-[#dcece5] bg-[#f8fcfa] text-[#063d2b] transition-all hover:bg-[#063d2b] hover:text-white"
               >
