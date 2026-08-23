@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import type { Html5Qrcode } from "html5-qrcode";
+import { readMockRepository, updateBookingStatus } from "@/lib/campss";
 
 type TicketStatus =
   | "BELUM_CHECK_IN"
@@ -18,9 +19,8 @@ type Ticket = {
 };
 
 export default function PemindaiPage() {
-  const scannerRef = useRef<any>(null);
+  const scannerRef = useRef<Html5Qrcode | null>(null);
   const [scannerRunning, setScannerRunning] = useState(false);
-  const [scanResult, setScanResult] = useState<string | null>(null);
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [message, setMessage] = useState("");
 
@@ -56,7 +56,6 @@ export default function PemindaiPage() {
 
   async function startScanner() {
     setMessage("");
-    setScanResult(null);
     setTicket(null);
 
     try {
@@ -108,7 +107,6 @@ export default function PemindaiPage() {
   }
 
   function handleScan(decodedText: string) {
-    setScanResult(decodedText);
 
     /*
       Untuk sementara QR berisi ID tiket.
@@ -116,9 +114,36 @@ export default function PemindaiPage() {
       CAMPSS-20260812-001
     */
 
-    const foundTicket = dummyTickets.find(
-      (item) => item.id === decodedText
+    let bookingId = decodedText;
+
+    try {
+      const qrData = JSON.parse(decodedText) as {
+        bookingId?: string;
+        type?: string;
+      };
+
+      if (qrData.type !== "E_TIKET_CAMPSS" || !qrData.bookingId) {
+        throw new Error("Invalid ticket QR");
+      }
+
+      bookingId = qrData.bookingId;
+    } catch {
+      // Tetap mendukung QR lama yang hanya berisi booking ID.
+    }
+
+    const sharedBooking = readMockRepository().bookings.find(
+      (item) => item.bookingId === bookingId
     );
+    const foundTicket = sharedBooking
+      ? {
+          id: sharedBooking.bookingId,
+          name: sharedBooking.leader.name,
+          date: sharedBooking.dateLabel,
+          hikers: sharedBooking.participantCount,
+          paymentStatus: "TERVERIFIKASI" as const,
+          hikingStatus: sharedBooking.status === "CHECKED_IN" ? "SEDANG_MENDAKI" as const : sharedBooking.status === "COMPLETED" ? "SELESAI_MENDAKI" as const : "BELUM_CHECK_IN" as const,
+        }
+      : dummyTickets.find((item) => item.id === bookingId);
 
     if (!foundTicket) {
       setTicket(null);
@@ -137,6 +162,7 @@ export default function PemindaiPage() {
   function handleCheckIn() {
     if (!ticket) return;
 
+    updateBookingStatus(ticket.id, "CHECKED_IN");
     setTicket({
       ...ticket,
       hikingStatus: "SEDANG_MENDAKI",
@@ -150,6 +176,7 @@ export default function PemindaiPage() {
   function handleCheckOut() {
     if (!ticket) return;
 
+    updateBookingStatus(ticket.id, "COMPLETED");
     setTicket({
       ...ticket,
       hikingStatus: "SELESAI_MENDAKI",
@@ -162,7 +189,6 @@ export default function PemindaiPage() {
 
   function resetScanner() {
     setTicket(null);
-    setScanResult(null);
     setMessage("");
   }
 

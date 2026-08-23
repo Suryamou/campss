@@ -1,11 +1,56 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
+import { USER_STORAGE_KEY } from "@/lib/campss";
 
 export default function DaftarPage() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [form, setForm] = useState({ name: "", email: "", phone: "", password: "", confirmPassword: "" });
+  const [agreement, setAgreement] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
+    setSuccess("");
+    if (!form.name.trim() || !form.email.trim() || !form.phone.trim() || !form.password || !form.confirmPassword) {
+      setError("Semua data wajib diisi.");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      setError("Format email tidak valid.");
+      return;
+    }
+    if (!/^\+?[0-9\s-]{8,18}$/.test(form.phone)) {
+      setError("Nomor WhatsApp tidak valid.");
+      return;
+    }
+    if (form.password !== form.confirmPassword) {
+      setError("Konfirmasi kata sandi tidak sama.");
+      return;
+    }
+    if (!agreement) {
+      setError("Persetujuan ketentuan wajib dicentang.");
+      return;
+    }
+    setLoading(true);
+    window.sessionStorage.setItem(USER_STORAGE_KEY, JSON.stringify({
+      id: `user-${form.email.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
+      name: form.name.trim(),
+      email: form.email.trim(),
+      phone: form.phone.trim(),
+      role: "user",
+    }));
+    setSuccess("Pendaftaran berhasil. Silakan masuk untuk melanjutkan.");
+    setLoading(false);
+    setTimeout(() => router.push("/login"), 700);
+  }
 
   return (
     <main className="min-h-screen bg-[#f4faf7]">
@@ -75,7 +120,7 @@ export default function DaftarPage() {
             </div>
 
             {/* FORM */}
-            <form className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-5">
 
               {/* NAMA */}
               <div>
@@ -89,6 +134,8 @@ export default function DaftarPage() {
                 <input
                   id="nama"
                   type="text"
+                  value={form.name}
+                  onChange={(event) => setForm({ ...form, name: event.target.value })}
                   placeholder="Masukkan nama lengkap"
                   className="w-full rounded-lg border border-gray-200 bg-[#f8fbf9] px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 outline-none transition focus:border-[#17634a] focus:bg-white focus:ring-2 focus:ring-[#17634a]/10"
                 />
@@ -106,7 +153,28 @@ export default function DaftarPage() {
                 <input
                   id="email"
                   type="email"
+                  value={form.email}
+                  onChange={(event) => setForm({ ...form, email: event.target.value })}
                   placeholder="Masukkan email"
+                  className="w-full rounded-lg border border-gray-200 bg-[#f8fbf9] px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 outline-none transition focus:border-[#17634a] focus:bg-white focus:ring-2 focus:ring-[#17634a]/10"
+                />
+              </div>
+
+              {/* NOMOR WHATSAPP */}
+              <div>
+                <label
+                  htmlFor="phone"
+                  className="mb-2 block text-sm font-medium text-gray-700"
+                >
+                  Nomor WhatsApp
+                </label>
+
+                <input
+                  id="phone"
+                  type="tel"
+                  value={form.phone}
+                  onChange={(event) => setForm({ ...form, phone: event.target.value })}
+                  placeholder="Contoh: 081234567890"
                   className="w-full rounded-lg border border-gray-200 bg-[#f8fbf9] px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 outline-none transition focus:border-[#17634a] focus:bg-white focus:ring-2 focus:ring-[#17634a]/10"
                 />
               </div>
@@ -125,6 +193,8 @@ export default function DaftarPage() {
                   <input
                     id="password"
                     type={showPassword ? "text" : "password"}
+                    value={form.password}
+                    onChange={(event) => setForm({ ...form, password: event.target.value })}
                     placeholder="Masukkan kata sandi"
                     className="w-full rounded-lg border border-gray-200 bg-[#f8fbf9] px-4 py-3 pr-20 text-sm text-gray-900 placeholder:text-gray-400 outline-none transition focus:border-[#17634a] focus:bg-white focus:ring-2 focus:ring-[#17634a]/10"
                   />
@@ -160,6 +230,8 @@ export default function DaftarPage() {
                         ? "text"
                         : "password"
                     }
+                    value={form.confirmPassword}
+                    onChange={(event) => setForm({ ...form, confirmPassword: event.target.value })}
                     placeholder="Ulangi kata sandi"
                     className="w-full rounded-lg border border-gray-200 bg-[#f8fbf9] px-4 py-3 pr-20 text-sm text-gray-900 placeholder:text-gray-400 outline-none transition focus:border-[#17634a] focus:bg-white focus:ring-2 focus:ring-[#17634a]/10"
                   />
@@ -187,6 +259,8 @@ export default function DaftarPage() {
                 <input
                   id="agreement"
                   type="checkbox"
+                  checked={agreement}
+                  onChange={(event) => setAgreement(event.target.checked)}
                   className="mt-1 h-4 w-4 accent-[#17634a]"
                 />
 
@@ -201,12 +275,19 @@ export default function DaftarPage() {
 
               </div>
 
+              {(error || success) && (
+                <div className={`rounded-lg border px-4 py-3 ${error ? "border-red-200 bg-red-50" : "border-emerald-200 bg-emerald-50"}`}>
+                  <p className={`text-xs font-medium ${error ? "text-red-700" : "text-emerald-700"}`}>{error || success}</p>
+                </div>
+              )}
+
               {/* BUTTON */}
               <button
                 type="submit"
+                disabled={loading}
                 className="w-full rounded-lg bg-[#063d2b] px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-[#052f22]"
               >
-                Daftar
+                {loading ? "Memproses..." : "Daftar"}
               </button>
 
             </form>

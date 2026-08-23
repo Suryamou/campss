@@ -2,18 +2,28 @@
 
 import Link from "next/link";
 import { QRCodeSVG } from "qrcode.react";
+import { useEffect, useState } from "react";
+import { BookingDraft, formatCurrency, readBooking } from "@/lib/campss";
 
 export default function ETiketPage() {
-  const bookingId = "CAMPSS-20260812-001";
+  const [booking, setBooking] = useState<BookingDraft | null>(null);
 
-  const dataTiket = {
-    nama: "Pendaki CAMPSS",
-    jalur: "Gunung Prau via Campurejo",
-    tanggal: "12 Agustus 2026",
-    jumlahPendaki: 1,
-    total: 40000,
-    status: "TERVERIFIKASI",
-  };
+  useEffect(() => {
+    queueMicrotask(() => setBooking(readBooking()));
+  }, []);
+
+  if (!booking) {
+    return (
+      <main className="min-h-screen bg-[#f4faf7] px-6 py-16 text-center">
+        <h1 className="text-2xl font-bold text-[#063d2b]">Tiket belum tersedia</h1>
+        <p className="mt-2 text-sm text-gray-500">Selesaikan pemesanan terlebih dahulu untuk melihat e-tiket.</p>
+        <Link href="/cek-kuota" className="mt-6 inline-block rounded-lg bg-[#063d2b] px-5 py-3 text-sm font-semibold text-white">Cek Kuota</Link>
+      </main>
+    );
+  }
+
+  const bookingId = booking.bookingId;
+  const paymentVerified = booking.status !== "PENDING_PAYMENT" && booking.status !== "PAYMENT_SUBMITTED" && booking.status !== "WAITING_VERIFICATION" && booking.status !== "REJECTED";
 
   const qrValue = JSON.stringify({
     bookingId,
@@ -69,12 +79,15 @@ export default function ETiketPage() {
             <div>
 
               <p className="text-sm font-semibold text-emerald-800">
-                Pembayaran Terverifikasi
+                {paymentVerified
+                  ? "E-Tiket Terverifikasi"
+                  : "E-Tiket Belum Terverifikasi"}
               </p>
 
               <p className="mt-1 text-xs text-emerald-700">
-                E-Tiket kamu sudah dapat digunakan untuk
-                melakukan check-in di Basecamp.
+                {paymentVerified
+                  ? "E-Tiket kamu dapat digunakan untuk proses check-in di Basecamp."
+                  : "E-Tiket akan dapat digunakan setelah pembayaran diverifikasi admin."}
               </p>
 
             </div>
@@ -134,7 +147,7 @@ export default function ETiketPage() {
                   </p>
 
                   <p className="mt-1 font-semibold text-[#063d2b]">
-                    {dataTiket.nama}
+                    {booking.leader.name}
                   </p>
 
                 </div>
@@ -146,7 +159,7 @@ export default function ETiketPage() {
                   </p>
 
                   <p className="mt-1 font-semibold text-[#063d2b]">
-                    {dataTiket.tanggal}
+                    {booking.dateLabel}
                   </p>
 
                 </div>
@@ -158,7 +171,7 @@ export default function ETiketPage() {
                   </p>
 
                   <p className="mt-1 font-semibold text-[#063d2b]">
-                    {dataTiket.jalur}
+                    {booking.route}
                   </p>
 
                 </div>
@@ -170,7 +183,7 @@ export default function ETiketPage() {
                   </p>
 
                   <p className="mt-1 font-semibold text-[#063d2b]">
-                    {dataTiket.jumlahPendaki} orang
+                    {booking.participantCount} orang
                   </p>
 
                 </div>
@@ -250,23 +263,22 @@ export default function ETiketPage() {
               <div className="flex flex-col items-center text-center">
 
                 <p className="text-sm font-bold text-[#063d2b]">
-                  QR Code E-Tiket
+                  {paymentVerified ? "QR Code E-Tiket" : "QR Code Belum Aktif"}
                 </p>
 
                 <p className="mt-1 text-xs leading-5 text-gray-500">
-                  Tunjukkan QR Code kepada petugas Basecamp.
+                  {paymentVerified ? "Tunjukkan QR Code kepada petugas Basecamp." : "QR akan tersedia setelah pembayaran diverifikasi admin."}
                 </p>
 
-                <div className="mt-6 rounded-2xl bg-white p-5 shadow-sm">
-
-                  <QRCodeSVG
-                    value={qrValue}
-                    size={190}
-                    level="H"
-                    includeMargin
-                  />
-
-                </div>
+                {paymentVerified ? (
+                  <div className="mt-6 rounded-2xl bg-white p-5 shadow-sm">
+                    <QRCodeSVG value={qrValue} size={190} level="H" includeMargin />
+                  </div>
+                ) : (
+                  <div className="mt-6 rounded-2xl border border-dashed border-[#cfe6dc] bg-white px-5 py-14 text-center">
+                    <p className="text-xs font-semibold text-gray-500">Menunggu verifikasi pembayaran</p>
+                  </div>
+                )}
 
                 <p className="mt-5 text-xs text-gray-400">
                   ID: {bookingId}
@@ -290,13 +302,13 @@ export default function ETiketPage() {
                 </p>
 
                 <p className="text-lg font-bold text-[#063d2b]">
-                  Rp {dataTiket.total.toLocaleString("id-ID")}
+                  {formatCurrency(booking.total)}
                 </p>
 
               </div>
 
               <span className="rounded-full bg-emerald-100 px-4 py-2 text-xs font-semibold text-emerald-700">
-                {dataTiket.status}
+                {booking.status}
               </span>
 
             </div>
@@ -322,7 +334,7 @@ export default function ETiketPage() {
 
           </div>
 
-          <div className="rounded-xl border border-[#cfe6dc] bg-[#e9f7f1] p-5">
+          <div className="rounded-xl border border-[  #cfe6dc] bg-[#e9f7f1] p-5">
 
             <p className="font-semibold text-[#063d2b]">
               Saat Kembali

@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { readQuotas, saveQuotas } from "@/lib/campss";
 
 type QuotaStatus = "BUKA" | "TERTUTUP";
 
@@ -57,6 +58,31 @@ export default function KelolaKuotaPage() {
   const [selectedQuota, setSelectedQuota] = useState<Quota | null>(null);
   const [message, setMessage] = useState("");
 
+  useEffect(() => {
+    queueMicrotask(() => {
+      const sharedQuotas = readQuotas();
+      setQuotas(sharedQuotas.map((item, index) => ({
+        id: index + 1,
+        date: item.dateLabel,
+        quota: item.maxQuota,
+        used: item.maxQuota - item.availableQuota,
+        status: item.status === "OPEN" ? "BUKA" : "TERTUTUP",
+      })));
+    });
+  }, []);
+
+  function persistQuotas(nextQuotas: Quota[]) {
+    setQuotas(nextQuotas);
+    saveQuotas(nextQuotas.map((item) => ({
+      date: item.date,
+      dateLabel: item.date,
+      day: "",
+      status: item.status === "BUKA" ? "OPEN" : "CLOSED",
+      availableQuota: Math.max(item.quota - item.used, 0),
+      maxQuota: item.quota,
+    })));
+  }
+
   const totalQuota = useMemo(
     () => quotas.reduce((total, item) => total + item.quota, 0),
     [quotas]
@@ -98,8 +124,8 @@ export default function KelolaKuotaPage() {
       return;
     }
 
-    setQuotas((current) => [
-      ...current,
+    const nextQuotas: Quota[] = [
+      ...quotas,
       {
         id: Date.now(),
         date: selectedDate,
@@ -107,7 +133,9 @@ export default function KelolaKuotaPage() {
         used: 0,
         status: "BUKA",
       },
-    ]);
+    ];
+
+    persistQuotas(nextQuotas);
 
     setSelectedDate("");
     setNewQuota("");
@@ -131,8 +159,7 @@ export default function KelolaKuotaPage() {
       return;
     }
 
-    setQuotas((current) =>
-      current.map((quotaItem) =>
+    const nextQuotas: Quota[] = quotas.map((quotaItem) =>
         quotaItem.id === id
           ? {
               ...quotaItem,
@@ -140,16 +167,16 @@ export default function KelolaKuotaPage() {
               status: quota === 0 ? "TERTUTUP" : "BUKA",
             }
           : quotaItem
-      )
-    );
+      );
+
+    persistQuotas(nextQuotas);
 
     setMessage("Kuota berhasil diperbarui.");
     setSelectedQuota(null);
   }
 
   function toggleStatus(id: number) {
-    setQuotas((current) =>
-      current.map((item) =>
+    const nextQuotas: Quota[] = quotas.map((item) =>
         item.id === id
           ? {
               ...item,
@@ -159,8 +186,9 @@ export default function KelolaKuotaPage() {
                   : "BUKA",
             }
           : item
-      )
-    );
+      );
+
+    persistQuotas(nextQuotas);
 
     setMessage("Status tanggal berhasil diperbarui.");
   }

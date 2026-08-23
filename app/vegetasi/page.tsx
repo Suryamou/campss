@@ -4,6 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
+import VegetationScanner from "@/components/VegetationScanner";
+import { dataVegetasi as sharedVegetationData, readVegetationHistory, saveVegetationView } from "@/lib/vegetasi";
 
 const dataVegetasi = [
   {
@@ -79,7 +81,7 @@ const dataVegetasi = [
     nama: "Cemara Gunung",
     namaLatin: "Casuarina junghuhniana",
     kategori: "Pohon Hutan Pegunungan",
-    foto: "/images/vegetasi/surya.jpeg",
+    foto: "/images/vegetasi/cemara-gunung.jpeg",
     deskripsi:
       "Pohon tinggi menjulang yang mendominasi kawasan hutan montana di sepanjang jalur pendakian Gunung Prau.",
     peran:
@@ -93,25 +95,28 @@ const dataVegetasi = [
   },
   {
     id: 6,
-    nama: "Bunga Hortensia (Panca Warna)",
-    namaLatin: "Hydrangea macrophylla",
-    kategori: "Tanaman Hias Pegunungan",
-    foto: "/images/vegetasi/surya.jpeg",
+    nama: "Kantong Semar",
+    namaLatin: "Nepenthes sp.",
+    kategori: "Tanaman Karnivora Pegunungan",
+    foto: "/images/vegetasi/kantong-semar.jpeg",
     deskripsi:
-      "Tanaman hias dengan kelopak bunga besar yang mekar indah di pekarangan rumah warga dan tepi jalan Desa Campurejo.",
+      "Tanaman unik berbentuk kantung yang dapat menangkap serangga untuk memenuhi kebutuhan nutrisinya di area tinggi.",
     peran:
-      "Menjaga kelembapan tanah mikro desa dan menjadi penarik polinator alami seperti lebah pegunungan.",
+      "Mengontrol populasi serangga dan menjadi indikator alami kesehatan ekosistem hutan pegunungan.",
     lokasi:
-      "Sepanjang jalan utama Desa Campurejo dan taman sekitar area Basecamp.",
+      "Jalur pendakian dataran tinggi dan area hutan sekitar Desa Campurejo.",
     manfaat:
-      "Memperindah lanskap desa wisata Campurejo serta menyambut kedatangan para pendaki.",
+      "Menjadi keanekaragaman hayati yang menarik perhatian peneliti dan pendaki.",
     fakta:
-      "Warna kelopak bunga Hortensia dapat berubah-ubah (biru, ungu, merah muda) tergantung pada tingkat keasaman (pH) tanahnya.",
+      "Cairan di dalam kantung Kantong Semar mengandung enzim pencerna yang berfungsi melarutkan serangga yang terperangkap.",
   },
 ];
 
 export default function VegetasiPage() {
   const [vegetasiAktif, setVegetasiAktif] = useState(dataVegetasi[0]);
+  const [learnedSlugs, setLearnedSlugs] = useState<string[]>(() =>
+    readVegetationHistory().map((item) => item.slug)
+  );
 
   return (
     <>
@@ -138,6 +143,13 @@ export default function VegetasiPage() {
               </p>
             </div>
           </div>
+        </section>
+
+        <section className="mx-auto max-w-7xl px-6 pt-10">
+          <VegetationScanner />
+          <p className="mt-3 text-xs text-gray-500">
+            Sudah dipelajari: {learnedSlugs.length} vegetasi
+          </p>
         </section>
 
         {/* VEGETASI UTAMA */}
@@ -266,6 +278,17 @@ export default function VegetasiPage() {
                     type="button"
                     onClick={() => {
                       setVegetasiAktif(item);
+                      const learnedSlug =
+                        sharedVegetationData.find(
+                          (entry) => entry.nama === item.nama
+                        )?.slug || item.nama.toLowerCase().replaceAll(" ", "-");
+
+                      saveVegetationView(learnedSlug);
+                      setLearnedSlugs((current) =>
+                        current.includes(learnedSlug)
+                          ? current
+                          : [...current, learnedSlug]
+                      );
 
                       window.scrollTo({
                         top: 0,
@@ -315,29 +338,58 @@ export default function VegetasiPage() {
 
         {/* KONSERVASI */}
         <section className="mx-auto max-w-7xl px-6 py-10">
-          <div className="rounded-xl bg-[#d5eee3] px-7 py-10 md:px-10">
-            <div className="grid items-center gap-8 md:grid-cols-[1fr_180px]">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-[#17634a]">
+          <div className="overflow-hidden rounded-2xl border border-[#cfe6dc] bg-white shadow-sm">
+            <div className="grid lg:grid-cols-[0.9fr_1.1fr]">
+              <div className="relative min-h-[270px] overflow-hidden bg-[#063d2b]">
+                <Image
+                  src="/images/hero-prau.jpg"
+                  alt="Lanskap Gunung Prau"
+                  fill
+                  className="object-cover"
+                />
+                <div className="absolute inset-0 bg-[#063d2b]/35" />
+                <div className="absolute bottom-6 left-6 right-6 text-white md:left-8 md:right-8">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-100">
+                    Menjaga yang kita lewati
+                  </p>
+                  <p className="mt-2 max-w-xs text-lg font-semibold leading-7">
+                    Gunung yang baik untuk didaki, juga baik untuk ditinggalkan.
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-7 md:p-10">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#17634a]">
                   Pelestarian Alam
                 </p>
 
-                <h2 className="mt-2 text-2xl font-bold text-[#063d2b] md:text-3xl">
+                <h2 className="mt-3 text-2xl font-bold text-[#063d2b] md:text-3xl">
                   Pentingnya Konservasi
                 </h2>
 
-                <p className="mt-4 max-w-2xl text-sm leading-6 text-gray-600">
-                  Melindungi kawasan Gunung Prau berarti ikut menjaga
-                  keseimbangan ekosistem dan keberlangsungan lingkungan
-                  bagi generasi mendatang. Jangan merusak vegetasi,
-                  jangan membuang sampah sembarangan, dan tetap hormati
-                  kawasan pendakian.
+                <p className="mt-4 max-w-2xl text-sm leading-7 text-gray-600">
+                  Setiap langkah di jalur pendakian meninggalkan pengaruh.
+                  Dengan mengenali vegetasi dan memperlakukannya dengan
+                  hormat, kita ikut menjaga air, tanah, dan rumah bagi banyak
+                  makhluk hidup di Gunung Prau.
                 </p>
-              </div>
 
-              <div className="flex justify-center">
-                <div className="flex h-28 w-28 items-center justify-center rounded-full bg-[#c4e5d7] text-6xl">
-                  🌱
+                <div className="mt-7 grid gap-4 border-t border-[#e3f0e9] pt-6 sm:grid-cols-3">
+                  <div>
+                    <p className="text-lg font-bold text-[#17634a]">01</p>
+                    <p className="mt-1 text-xs font-semibold text-[#063d2b]">Tetap di jalur</p>
+                    <p className="mt-1 text-xs leading-5 text-gray-500">Lindungi tunas dan tanaman di tepi trek.</p>
+                  </div>
+                  <div>
+                    <p className="text-lg font-bold text-[#17634a]">02</p>
+                    <p className="mt-1 text-xs font-semibold text-[#063d2b]">Bawa kembali sampah</p>
+                    <p className="mt-1 text-xs leading-5 text-gray-500">Yang dibawa naik, dibawa turun kembali.</p>
+                  </div>
+                  <div>
+                    <p className="text-lg font-bold text-[#17634a]">03</p>
+                    <p className="mt-1 text-xs font-semibold text-[#063d2b]">Jangan mengambil</p>
+                    <p className="mt-1 text-xs leading-5 text-gray-500">Biarkan flora tetap tumbuh di habitatnya.</p>
+                  </div>
                 </div>
               </div>
             </div>

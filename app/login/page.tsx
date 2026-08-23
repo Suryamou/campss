@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { USER_STORAGE_KEY } from "@/lib/campss";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -11,27 +12,32 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState("");
 
   function handleLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     setError("");
+    setSuccess("");
 
-    if (!email.trim() || !password.trim()) {
+    if (!email.trim() || !password) {
       setError("Email dan kata sandi wajib diisi.");
       return;
     }
-
-    // Login sementara untuk tahap pengembangan
-    if (
-      email.trim().toLowerCase() !== "user@campss.com" ||
-      password !== "123456"
-    ) {
-      setError("Email atau kata sandi tidak sesuai.");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setError("Format email tidak valid.");
       return;
     }
 
-    // Simpan status login sementara
+    setLoading(true);
+    const user = {
+      id: `user-${email.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
+      name: email.trim().split("@")[0],
+      email: email.trim(),
+      role: "user" as const,
+    };
+    window.sessionStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
     if (remember) {
       localStorage.setItem("campss_logged_in", "true");
       localStorage.setItem("campss_user_email", email.trim());
@@ -39,9 +45,9 @@ export default function LoginPage() {
       sessionStorage.setItem("campss_logged_in", "true");
       sessionStorage.setItem("campss_user_email", email.trim());
     }
-
-    // Kembali ke Beranda CAMPSS
-    router.push("/");
+    setSuccess("Login berhasil. Mengarahkan ke beranda...");
+    setLoading(false);
+    setTimeout(() => router.push("/"), 500);
   }
 
   return (
@@ -215,10 +221,17 @@ export default function LoginPage() {
               {/* BUTTON */}
               <button
                 type="submit"
-                className="w-full rounded-lg bg-[#063d2b] px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-[#052f22]"
+                disabled={loading}
+                className="w-full rounded-lg bg-[#063d2b] px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-[#052f22] disabled:cursor-not-allowed disabled:opacity-60"
               >
-                Masuk
+                {loading ? "Memproses..." : "Masuk"}
               </button>
+
+              {(error || success) && (
+                <div className={`rounded-lg border px-4 py-3 ${error ? "border-red-200 bg-red-50" : "border-emerald-200 bg-emerald-50"}`}>
+                  <p className={`text-xs font-medium ${error ? "text-red-700" : "text-emerald-700"}`}>{error || success}</p>
+                </div>
+              )}
 
             </form>
 
@@ -245,29 +258,6 @@ export default function LoginPage() {
               <p className="text-xs leading-5 text-gray-600">
                 Akun CAMPSS diperlukan untuk melakukan pemesanan
                 tiket pendakian dan melihat riwayat pemesanan.
-              </p>
-
-            </div>
-
-            {/* AKUN DEMO */}
-            <div className="mt-4 rounded-lg border border-gray-200 bg-white p-4">
-
-              <p className="text-xs font-semibold text-[#063d2b]">
-                Akun sementara untuk testing
-              </p>
-
-              <p className="mt-2 text-xs text-gray-500">
-                Email:{" "}
-                <span className="font-medium text-gray-700">
-                  user@campss.com
-                </span>
-              </p>
-
-              <p className="mt-1 text-xs text-gray-500">
-                Password:{" "}
-                <span className="font-medium text-gray-700">
-                  123456
-                </span>
               </p>
 
             </div>

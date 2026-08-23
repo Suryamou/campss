@@ -1,38 +1,15 @@
-import Link from "next/link";
-import Navbar from "@/components/Navbar";
+"use client";
 
-const jadwal = [
-  {
-    tanggal: "12",
-    hari: "SEL",
-    status: "Tersedia",
-    kuota: 70,
-    maksimal: 100,
-  },
-  {
-    tanggal: "13",
-    hari: "RAB",
-    status: "Tersedia",
-    kuota: 42,
-    maksimal: 100,
-  },
-  {
-    tanggal: "14",
-    hari: "KAM",
-    status: "Hampir Penuh",
-    kuota: 8,
-    maksimal: 100,
-  },
-  {
-    tanggal: "15",
-    hari: "JUM",
-    status: "Penuh",
-    kuota: 0,
-    maksimal: 100,
-  },
-];
+import Link from "next/link";
+import { useState } from "react";
+import Navbar from "@/components/Navbar";
+import { quotaSchedules } from "@/lib/campss";
 
 export default function CekKuotaPage() {
+  const [monthOffset, setMonthOffset] = useState(0);
+  const displayedSchedules = monthOffset === 0 ? quotaSchedules : [];
+  const monthLabel = monthOffset === 0 ? "Agustus 2026" : monthOffset < 0 ? "Juli 2026" : "September 2026";
+
   return (
     <>
       <Navbar />
@@ -61,6 +38,7 @@ export default function CekKuotaPage() {
         <div className="mb-6 flex items-center justify-between rounded-xl bg-white p-5 shadow-sm">
 
           <button
+            onClick={() => setMonthOffset((current) => current - 1)}
             className="rounded-lg border border-gray-200 px-4 py-2 text-sm hover:bg-gray-50"
             aria-label="Bulan sebelumnya"
           >
@@ -68,10 +46,11 @@ export default function CekKuotaPage() {
           </button>
 
           <h2 className="font-semibold text-[#063d2b]">
-            Agustus 2026
+            {monthLabel}
           </h2>
 
           <button
+            onClick={() => setMonthOffset((current) => current + 1)}
             className="rounded-lg border border-gray-200 px-4 py-2 text-sm hover:bg-gray-50"
             aria-label="Bulan berikutnya"
           >
@@ -83,15 +62,15 @@ export default function CekKuotaPage() {
         {/* Daftar jadwal */}
         <div className="grid gap-4">
 
-          {jadwal.map((item) => {
+          {displayedSchedules.length > 0 ? displayedSchedules.map((item) => {
 
-            const penuh = item.kuota === 0;
+            const penuh = item.availableQuota === 0;
             const hampirPenuh =
-              item.kuota > 0 && item.kuota <= 10;
+              item.availableQuota > 0 && item.availableQuota <= 10;
 
             return (
               <div
-                key={item.tanggal}
+                key={item.date}
                 className="rounded-xl border border-[#dcece5] bg-white p-5 shadow-sm"
               >
 
@@ -103,11 +82,11 @@ export default function CekKuotaPage() {
                     <div className="flex h-16 w-16 flex-col items-center justify-center rounded-xl bg-[#e5f4ee]">
 
                       <span className="text-xs font-medium text-[#17634a]">
-                        {item.hari}
+                        {item.day}
                       </span>
 
                       <span className="text-xl font-bold text-[#063d2b]">
-                        {item.tanggal}
+                        {item.date.slice(-2)}
                       </span>
 
                     </div>
@@ -133,7 +112,7 @@ export default function CekKuotaPage() {
                       </span>
 
                       <span className="font-semibold text-[#063d2b]">
-                        {item.kuota} / {item.maksimal}
+                        {item.availableQuota} / {item.maxQuota}
                       </span>
                     </div>
 
@@ -142,7 +121,7 @@ export default function CekKuotaPage() {
                       <div
                         className="h-full rounded-full bg-[#17634a]"
                         style={{
-                          width: `${(item.kuota / item.maksimal) * 100}%`,
+                          width: `${(item.availableQuota / item.maxQuota) * 100}%`,
                         }}
                       />
 
@@ -170,7 +149,7 @@ export default function CekKuotaPage() {
                     </span>
 
                     <Link
-                      href={penuh ? "#" : "/pemesanan"}
+                      href={penuh ? "#" : `/pemesanan?tanggal=${item.date}`}
                       className={`rounded-lg px-4 py-2.5 text-sm font-semibold ${
                         penuh
                           ? "pointer-events-none bg-gray-100 text-gray-400"
@@ -186,7 +165,12 @@ export default function CekKuotaPage() {
 
               </div>
             );
-          })}
+          }) : (
+            <div className="rounded-xl border border-[#dcece5] bg-white p-10 text-center shadow-sm">
+              <p className="text-sm font-semibold text-[#063d2b]">Belum ada jadwal pendakian</p>
+              <p className="mt-2 text-xs text-gray-500">Pilih bulan lain untuk melihat jadwal yang tersedia.</p>
+            </div>
+          )}
 
         </div>
 

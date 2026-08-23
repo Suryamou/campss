@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { BookingDraft, formatCurrency, readBookingHistory } from "@/lib/campss";
 
 type StatusPemesanan =
   | "TERVERIFIKASI"
@@ -19,38 +20,21 @@ type Pemesanan = {
   status: StatusPemesanan;
 };
 
-const dataPemesanan: Pemesanan[] = [
-  {
-    id: "CAMPSS-20260812-001",
-    tanggalPemesanan: "10 Agustus 2026",
-    tanggalPendakian: "12 Agustus 2026",
-    jalur: "Gunung Prau via Campurejo",
-    jumlahPendaki: 1,
-    total: 40000,
-    status: "TERVERIFIKASI",
-  },
-  {
-    id: "CAMPSS-20260720-002",
-    tanggalPemesanan: "18 Juli 2026",
-    tanggalPendakian: "20 Juli 2026",
-    jalur: "Gunung Prau via Campurejo",
-    jumlahPendaki: 2,
-    total: 80000,
-    status: "SELESAI",
-  },
-  {
-    id: "CAMPSS-20260615-003",
-    tanggalPemesanan: "12 Juni 2026",
-    tanggalPendakian: "15 Juni 2026",
-    jalur: "Gunung Prau via Campurejo",
-    jumlahPendaki: 3,
-    total: 120000,
-    status: "MENUNGGU VERIFIKASI",
-  },
-];
-
 export default function RiwayatPemesananPage() {
   const [filter, setFilter] = useState<"SEMUA" | StatusPemesanan>("SEMUA");
+  const [dataPemesanan, setDataPemesanan] = useState<Pemesanan[]>([]);
+
+  useEffect(() => {
+    queueMicrotask(() => setDataPemesanan(readBookingHistory().map((item: BookingDraft) => ({
+      id: item.bookingId,
+      tanggalPemesanan: new Date(item.createdAt).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }),
+      tanggalPendakian: item.dateLabel,
+      jalur: item.route,
+      jumlahPendaki: item.participantCount,
+      total: item.total,
+      status: item.status === "WAITING_VERIFICATION" ? "MENUNGGU VERIFIKASI" : item.status === "PENDING_PAYMENT" ? "MENUNGGU PEMBAYARAN" : item.status === "COMPLETED" ? "SELESAI" : "TERVERIFIKASI",
+    }))));
+  }, []);
 
   const pemesananDitampilkan =
     filter === "SEMUA"
@@ -195,9 +179,7 @@ export default function RiwayatPemesananPage() {
 
                     <Info
                       label="Total Pembayaran"
-                      value={`Rp ${item.total.toLocaleString(
-                        "id-ID"
-                      )}`}
+                      value={formatCurrency(item.total)}
                     />
 
                   </div>

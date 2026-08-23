@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import Footer from "@/components/Footer";
 
 type Wisata = {
   nama: string;
+  foto: string;
   lokasi: string;
   deskripsi: string;
   tiket: string;
@@ -17,6 +19,7 @@ type Wisata = {
 const wisataSekitar: Wisata[] = [
   {
     nama: "mBETENG SATA",
+    foto: "/images/mbeteng-sata.jpeg",
     lokasi: "Campurejo, Tretep, Temanggung",
     deskripsi:
       "Destinasi wisata alam di sekitar kawasan Campurejo yang dapat menjadi pilihan untuk dikunjungi sebelum atau setelah pendakian.",
@@ -26,6 +29,7 @@ const wisataSekitar: Wisata[] = [
   },
   {
     nama: "MBARISAN",
+    foto: "/images/mbarisan.jpeg",
     lokasi: "Sekitar kawasan Campurejo",
     deskripsi:
       "Salah satu pilihan destinasi di sekitar kawasan Campurejo untuk menikmati suasana alam dan pemandangan pegunungan.",
@@ -161,7 +165,14 @@ export default function Home() {
                   {/* Area visual */}
                   <div className="relative h-52 overflow-hidden bg-[#063d2b]">
 
-                    <div className="absolute inset-0 bg-gradient-to-br from-[#063d2b] via-[#17634a] to-[#5c8b72]" />
+                    <Image
+                      src={wisata.foto}
+                      alt={`Foto ${wisata.nama}`}
+                      fill
+                      className="object-cover"
+                    />
+
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#063d2b]/85 via-[#063d2b]/25 to-transparent" />
 
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="text-center text-white">

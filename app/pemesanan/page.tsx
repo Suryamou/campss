@@ -1,13 +1,98 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useSearchParams, useRouter } from "next/navigation";
+import { FormEvent } from "react";
+import { Suspense } from "react";
+import { PRICE_PER_PERSON, quotaSchedules, readUser, saveBooking } from "@/lib/campss";
 
 export default function PemesananPage() {
-  const [jumlahPendaki, setJumlahPendaki] = useState(1);
+  return (
+    <Suspense fallback={<main className="min-h-screen bg-[#f4faf7]" />}>
+      <BookingForm />
+    </Suspense>
+  );
+}
 
-  const HARGA_TIKET = 40000;
-  const totalPembayaran = jumlahPendaki * HARGA_TIKET;
+function BookingForm() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const [jumlahPendaki, setJumlahPendaki] = useState(1);
+  const selectedDate = searchParams.get("tanggal") || quotaSchedules[0].date;
+  const requestedSchedule = quotaSchedules.find((item) => item.date === selectedDate);
+  const selectedSchedule = requestedSchedule || {
+    date: selectedDate,
+    dateLabel: "Tanggal tidak tersedia",
+    day: "",
+    status: "CLOSED" as const,
+    availableQuota: 0,
+    maxQuota: 0,
+  };
+  const [form, setForm] = useState({ name: "", email: "", phone: "", identityType: "", identityNumber: "" });
+  const [agreement, setAgreement] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const totalPembayaran = jumlahPendaki * PRICE_PER_PERSON;
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      const user = readUser();
+      if (user) {
+        setForm((current) => ({ ...current, name: user.name, email: user.email, phone: user.phone || "" }));
+      }
+    });
+  }, []);
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
+    if (!form.name.trim() || !form.email.trim() || !form.phone.trim() || !form.identityType || !form.identityNumber.trim()) {
+      setError("Semua data ketua pendakian wajib diisi.");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      setError("Format email tidak valid.");
+      return;
+    }
+    if (!/^\+?[0-9\s-]{8,18}$/.test(form.phone)) {
+      setError("Nomor WhatsApp tidak valid.");
+      return;
+    }
+    if (!agreement) {
+      setError("Persetujuan pendakian wajib dicentang.");
+      return;
+    }
+    if (!requestedSchedule) {
+      setError("Tanggal pendakian tidak tersedia.");
+      return;
+    }
+    if (requestedSchedule.status === "CLOSED") {
+      setError("Pendakian pada tanggal tersebut sedang ditutup.");
+      return;
+    }
+    if (jumlahPendaki > requestedSchedule.availableQuota) {
+      setError("Kuota tidak mencukupi untuk jumlah pendaki yang dipilih.");
+      return;
+    }
+    setLoading(true);
+    const user = readUser();
+    saveBooking({
+      bookingId: `CAMPSS-${selectedDate.replaceAll("-", "")}-${Date.now().toString().slice(-3)}`,
+      userId: user?.id || "guest-user",
+      date: selectedDate,
+      dateLabel: selectedSchedule.dateLabel,
+      route: "Gunung Prau via Campurejo",
+      leader: { name: form.name.trim(), email: form.email.trim(), phone: form.phone.trim(), identityType: form.identityType, identityNumber: form.identityNumber.trim() },
+      participantCount: jumlahPendaki,
+      pricePerPerson: PRICE_PER_PERSON,
+      total: totalPembayaran,
+      status: "PENDING_PAYMENT",
+      createdAt: new Date().toISOString(),
+    });
+    router.push("/pembayaran");
+  }
 
   return (
     <main className="min-h-screen bg-[#f4faf7]">
@@ -80,7 +165,7 @@ export default function PemesananPage() {
         <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
 
           {/* FORM */}
-          <div className="space-y-6">
+          <form id="booking-form" onSubmit={handleSubmit} className="space-y-6">
 
             {/* Jadwal */}
             <div className="rounded-xl border border-[#dcece5] bg-white p-6 shadow-sm">
@@ -107,7 +192,7 @@ export default function PemesananPage() {
                   </p>
 
                   <p className="mt-1 font-semibold text-[#063d2b]">
-                    12 Agustus 2026
+                    {selectedSchedule.dateLabel}
                   </p>
                 </div>
 
@@ -137,6 +222,8 @@ export default function PemesananPage() {
 
                   <input
                     type="text"
+                    value={form.name}
+                    onChange={(event) => setForm({ ...form, name: event.target.value })}
                     placeholder="Sesuai kartu identitas"
                     className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm outline-none focus:border-[#17634a] focus:ring-2 focus:ring-[#17634a]/10"
                   />
@@ -151,6 +238,8 @@ export default function PemesananPage() {
 
                   <input
                     type="email"
+                    value={form.email}
+                    onChange={(event) => setForm({ ...form, email: event.target.value })}
                     placeholder="Email aktif"
                     className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm outline-none focus:border-[#17634a] focus:ring-2 focus:ring-[#17634a]/10"
                   />
@@ -165,6 +254,8 @@ export default function PemesananPage() {
 
                   <input
                     type="tel"
+                    value={form.phone}
+                    onChange={(event) => setForm({ ...form, phone: event.target.value })}
                     placeholder="08xxxxxxxxxx"
                     className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm outline-none focus:border-[#17634a] focus:ring-2 focus:ring-[#17634a]/10"
                   />
@@ -179,6 +270,8 @@ export default function PemesananPage() {
 
                   <input
                     type="text"
+                    value={form.identityNumber}
+                    onChange={(event) => setForm({ ...form, identityNumber: event.target.value })}
                     placeholder="Nomor KTP / identitas"
                     className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm outline-none focus:border-[#17634a] focus:ring-2 focus:ring-[#17634a]/10"
                   />
@@ -193,7 +286,8 @@ export default function PemesananPage() {
 
                   <select
                     className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm outline-none focus:border-[#17634a] focus:ring-2 focus:ring-[#17634a]/10"
-                    defaultValue=""
+                    value={form.identityType}
+                    onChange={(event) => setForm({ ...form, identityType: event.target.value })}
                   >
                     <option value="" disabled>
                       Pilih identitas
@@ -316,6 +410,8 @@ export default function PemesananPage() {
                 <input
                   id="agreement"
                   type="checkbox"
+                  checked={agreement}
+                  onChange={(event) => setAgreement(event.target.checked)}
                   className="mt-1 h-4 w-4 accent-[#17634a]"
                 />
 
@@ -332,7 +428,8 @@ export default function PemesananPage() {
 
             </div>
 
-          </div>
+            {error && <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-xs font-medium text-red-700">{error}</p>}
+          </form>
 
           {/* RINGKASAN */}
           <aside className="h-fit rounded-xl border border-[#dcece5] bg-white p-6 shadow-sm lg:sticky lg:top-6">
@@ -362,7 +459,7 @@ export default function PemesananPage() {
                 </span>
 
                 <span className="font-medium text-[#063d2b]">
-                  12 Agustus 2026
+                  {selectedSchedule.dateLabel}
                 </span>
 
               </div>
@@ -399,12 +496,14 @@ export default function PemesananPage() {
               Tarid Pendakian Rp40.000 per orang.
             </p>
 
-            <Link
-              href="/pembayaran"
-              className="mt-6 block w-full rounded-lg bg-[#063d2b] px-5 py-3.5 text-center text-sm font-semibold text-white hover:bg-[#052f22]"
+            <button
+              type="submit"
+              form="booking-form"
+              disabled={loading}
+              className="mt-6 block w-full rounded-lg bg-[#063d2b] px-5 py-3.5 text-center text-sm font-semibold text-white hover:bg-[#052f22] disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Lanjut ke Pembayaran
-            </Link>
+              {loading ? "Memproses..." : "Lanjut ke Pembayaran"}
+            </button>
 
           </aside>
 

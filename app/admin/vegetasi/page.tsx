@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { QRCodeSVG } from "qrcode.react";
 
 type Vegetation = {
   id: number;
@@ -64,6 +65,7 @@ export default function KelolaVegetasiPage() {
     role: "",
     image: "",
   });
+  const [formError, setFormError] = useState("");
 
   const filteredVegetation = vegetations.filter((item) => {
     const keyword = search.toLowerCase();
@@ -76,6 +78,7 @@ export default function KelolaVegetasiPage() {
 
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
+    setFormError("");
 
     if (
       !form.name ||
@@ -83,6 +86,7 @@ export default function KelolaVegetasiPage() {
       !form.habitat ||
       !form.description
     ) {
+      setFormError("Nama, nama ilmiah, habitat, dan deskripsi wajib diisi.");
       return;
     }
 
@@ -433,6 +437,12 @@ export default function KelolaVegetasiPage() {
                 }
               />
 
+              {formError && (
+                <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-xs font-medium text-red-700">
+                  {formError}
+                </p>
+              )}
+
               <Input
                 label="URL Foto"
                 placeholder="https://..."
@@ -535,19 +545,11 @@ export default function KelolaVegetasiPage() {
                 <div className="flex items-center gap-4">
 
                   <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-xl border-4 border-white bg-white text-center shadow-sm">
-
-                    <div>
-
-                      <div className="text-2xl">
-                        ▦
-                      </div>
-
-                      <p className="mt-1 text-[7px] font-bold">
-                        QR
-                      </p>
-
-                    </div>
-
+                    <QRCodeSVG
+                      value={`${typeof window !== "undefined" ? window.location.origin : ""}/vegetasi/${getVegetationSlug(selected.name)}`}
+                      size={82}
+                      includeMargin
+                    />
                   </div>
 
                   <div>
@@ -562,7 +564,7 @@ export default function KelolaVegetasiPage() {
                     </p>
 
                     <p className="mt-2 font-mono text-[9px] font-bold text-[#17634a]">
-                      {selected.qrCode}
+                      /vegetasi/{getVegetationSlug(selected.name)}
                     </p>
 
                   </div>
@@ -575,14 +577,10 @@ export default function KelolaVegetasiPage() {
               <div className="mt-5 flex gap-3">
 
                 <button
-                  onClick={() =>
-                    window.alert(
-                      "Fitur generate QR akan disambungkan ke sistem QR CAMPSS."
-                    )
-                  }
+                  onClick={() => window.print()}
                   className="flex-1 rounded-xl bg-[#073d2b] px-4 py-3 text-xs font-bold text-white hover:bg-[#052f22]"
                 >
-                  Generate QR
+                  Cetak QR
                 </button>
 
                 <button
@@ -703,4 +701,14 @@ function Info({
 
     </div>
   );
+}
+
+function getVegetationSlug(name: string) {
+  const normalized = name.toLowerCase();
+  if (normalized.includes("kopi")) return "kopi-arabika";
+  if (normalized.includes("jambu")) return "jambu-air";
+  if (normalized.includes("tembakau")) return "tembakau-temanggung";
+  if (normalized.includes("edelweis")) return "edelweis";
+  if (normalized.includes("cantigi")) return "cemara-gunung";
+  return normalized.trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "vegetasi";
 }

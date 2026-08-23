@@ -1,9 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { FormEvent, useState } from "react";
 
 export default function AdminLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
+    if (!username.trim() || !password) {
+      setError("Username dan password wajib diisi.");
+      return;
+    }
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      setError("Login admin menunggu integrasi autentikasi backend.");
+    }, 400);
+  }
 
   return (
     <main className="min-h-screen bg-[#f4faf7]">
@@ -103,6 +121,8 @@ export default function AdminLoginPage() {
 
               </div>
 
+              <form onSubmit={handleSubmit}>
+
               {/* Username */}
               <div className="mt-7">
 
@@ -112,6 +132,8 @@ export default function AdminLoginPage() {
 
                 <input
                   type="text"
+                  value={username}
+                  onChange={(event) => setUsername(event.target.value)}
                   placeholder="Masukkan username"
                   className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-[#17634a] focus:ring-2 focus:ring-[#17634a]/10"
                 />
@@ -129,6 +151,8 @@ export default function AdminLoginPage() {
 
                   <input
                     type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
                     placeholder="Masukkan password"
                     className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 pr-20 text-sm outline-none transition focus:border-[#17634a] focus:ring-2 focus:ring-[#17634a]/10"
                   />
@@ -149,11 +173,20 @@ export default function AdminLoginPage() {
 
               {/* Login */}
               <button
-                type="button"
+                type="submit"
+                disabled={loading}
                 className="mt-7 w-full rounded-lg bg-[#063d2b] px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-[#052f22]"
               >
-                Masuk ke Dashboard
+                {loading ? "Memproses..." : "Masuk ke Dashboard"}
               </button>
+
+              {error && (
+                <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-xs font-medium text-red-700">
+                  {error}
+                </p>
+              )}
+
+              </form>
 
               {/* Security */}
               <div className="mt-6 rounded-lg bg-[#f4faf7] p-4">

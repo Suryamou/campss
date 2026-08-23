@@ -70,10 +70,13 @@ export default function Navbar() {
             onClick={closeMenu}
             className="flex items-center gap-3 text-xl font-bold tracking-tight text-emerald-950"
           >
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-950 text-sm font-black text-white shadow-lg shadow-emerald-900/20">
-              C
-            </span>
-
+<div className="relative h-10 w-10 overflow-hidden rounded-full bg-white shadow-lg shadow-emerald-900/20">
+  <img
+    src="/images/logo-campurejo.png"
+    alt="Logo Campurejo"
+    className="h-full w-full object-cover"
+  />
+</div>
             <span>CAMPSS</span>
           </Link>
 
@@ -84,7 +87,7 @@ export default function Navbar() {
               <Link
                 key={item.href}
                 href={item.href}
-                onClick={(e) => handleNavClick(e as any, item.href)}
+                onClick={(e) => handleNavClick(e, item.href)}
                 className={`rounded-full px-4 py-2 text-sm font-medium transition hover:bg-emerald-950 hover:text-white ${
                   index === 0
                     ? "text-emerald-950"
@@ -131,7 +134,7 @@ export default function Navbar() {
                   key={item.href}
                   href={item.href}
                   onClick={(e) => {
-                    handleNavClick(e as any, item.href, { close: true });
+                    handleNavClick(e, item.href, { close: true });
                     // if not an in-page anchor, still close menu
                     if (!item.href.includes("#")) closeMenu();
                   }}

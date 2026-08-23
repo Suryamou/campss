@@ -2,9 +2,40 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useEffect } from "react";
+import { BookingDraft, formatCurrency, readBooking, saveBooking, saveBookingToHistory, updateBooking } from "@/lib/campss";
 
 export default function PembayaranPage() {
   const [fileName, setFileName] = useState("");
+  const [booking, setBooking] = useState<BookingDraft | null>(null);
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [fileError, setFileError] = useState("");
+
+  useEffect(() => {
+    queueMicrotask(() => setBooking(readBooking()));
+  }, []);
+
+  function handleSubmitPayment() {
+    if (!booking) {
+      setError("Data pemesanan belum tersedia. Silakan buat pemesanan terlebih dahulu.");
+      return;
+    }
+    if (!fileName || fileError) {
+      setError("Bukti pembayaran belum dipilih.");
+      return;
+    }
+    setLoading(true);
+    const updated = updateBooking({ status: "WAITING_VERIFICATION", paymentProofName: fileName });
+    if (updated) {
+      saveBooking(updated);
+      saveBookingToHistory(updated);
+      setBooking(updated);
+      setMessage("Bukti pembayaran berhasil dikirim dan menunggu verifikasi admin.");
+    }
+    setLoading(false);
+  }
 
   return (
     <main className="min-h-screen bg-[#f4faf7]">
@@ -106,7 +137,7 @@ export default function PembayaranPage() {
                 <div className="my-4 flex justify-center">
                   <div className="relative rounded-xl border border-[#dcece5] bg-white p-3 shadow-sm">
                     <img
-                      src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=CAMPSS-20260812-001"
+                      src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=Basecamp-Campurejo-QRIS"
                       alt="QRIS Basecamp Campurejo"
                       className="h-44 w-44 object-contain"
                     />
@@ -225,6 +256,14 @@ export default function PembayaranPage() {
                     const file = event.target.files?.[0];
 
                     if (file) {
+                      const allowedTypes = ["image/jpeg", "image/png", "application/pdf"];
+                      const maxSize = 5 * 1024 * 1024;
+                      if (!allowedTypes.includes(file.type) || file.size === 0 || file.size > maxSize) {
+                        setFileName("");
+                        setFileError("File harus JPG, PNG, atau PDF dengan ukuran maksimal 5 MB.");
+                        return;
+                      }
+                      setFileError("");
                       setFileName(file.name);
                     }
                   }}
@@ -233,6 +272,8 @@ export default function PembayaranPage() {
               </label>
 
             </div>
+
+            {fileError && <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-xs font-medium text-red-700">{fileError}</p>}
 
             {/* Catatan */}
             <div className="rounded-xl border border-[#cfe6dc] bg-[#e9f7f1] p-5">
@@ -280,7 +321,7 @@ export default function PembayaranPage() {
                 </p>
 
                 <p className="mt-1 font-semibold text-[#063d2b]">
-                  CAMPSS-20260812-001
+                  {booking?.bookingId || "Belum ada pemesanan"}
                 </p>
               </div>
 
@@ -299,11 +340,23 @@ export default function PembayaranPage() {
               <div className="flex justify-between text-sm">
 
                 <span className="text-gray-500">
+                  Harga per orang
+                </span>
+
+                <span className="font-medium text-[#063d2b]">
+                  {booking ? formatCurrency(booking.pricePerPerson) : "Rp 0"}
+                </span>
+
+              </div>
+
+              <div className="flex justify-between text-sm">
+
+                <span className="text-gray-500">
                   Tanggal
                 </span>
 
                 <span className="font-medium text-[#063d2b]">
-                  12 Agustus 2026
+                  {booking?.dateLabel || "-"}
                 </span>
 
               </div>
@@ -315,7 +368,7 @@ export default function PembayaranPage() {
                 </span>
 
                 <span className="font-medium text-[#063d2b]">
-                  1 orang
+                  {booking?.participantCount || 0} orang
                 </span>
 
               </div>
@@ -331,16 +384,24 @@ export default function PembayaranPage() {
               </span>
 
               <span className="text-xl font-bold text-[#063d2b]">
-                Rp 40.000
+                {booking ? formatCurrency(booking.total) : "Rp 0"}
               </span>
 
             </div>
 
+            {(error || message) && (
+              <p className={`mt-4 rounded-lg border px-4 py-3 text-xs font-medium ${error ? "border-red-200 bg-red-50 text-red-700" : "border-emerald-200 bg-emerald-50 text-emerald-700"}`}>
+                {error || message}
+              </p>
+            )}
+
             <button
               type="button"
+              onClick={handleSubmitPayment}
+              disabled={loading || Boolean(message)}
               className="mt-6 w-full rounded-lg bg-[#063d2b] px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-[#052f22]"
             >
-              Kirim Bukti Pembayaran
+              {loading ? "Mengirim..." : message ? "Menunggu Verifikasi" : "Kirim Bukti Pembayaran"}
             </button>
 
             <p className="mt-3 text-center text-xs leading-5 text-gray-400">

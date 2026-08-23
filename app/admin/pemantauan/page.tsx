@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { readMockRepository, updateBookingStatus } from "@/lib/campss";
 
 type HikerStatus =
   | "BELUM_CHECK_IN"
@@ -101,6 +102,26 @@ export default function PemantauanPage() {
   const [search, setSearch] = useState("");
   const [selectedHiker, setSelectedHiker] = useState<Hiker | null>(null);
 
+  useEffect(() => {
+    queueMicrotask(() => {
+      const bookings = readMockRepository().bookings;
+      if (bookings.length > 0) {
+        setHikers(bookings.map((booking, index) => ({
+          id: index + 1,
+          ticketId: booking.bookingId,
+          name: booking.leader.name,
+          phone: booking.leader.phone,
+          date: booking.dateLabel,
+          groupSize: booking.participantCount,
+          status: booking.status === "CHECKED_IN" ? "SEDANG_MENDAKI" : booking.status === "COMPLETED" ? "SELESAI_MENDAKI" : "BELUM_CHECK_IN",
+          checkIn: booking.status === "CHECKED_IN" || booking.status === "COMPLETED" ? "Tersimpan" : null,
+          checkOut: booking.status === "COMPLETED" ? "Tersimpan" : null,
+          emergencyContact: "Belum tersedia",
+        })));
+      }
+    });
+  }, []);
+
   const statistics = useMemo(() => {
     return {
       total: hikers.length,
@@ -133,6 +154,8 @@ export default function PemantauanPage() {
   }, [hikers, filter, search]);
 
   function handleManualCheckIn(id: number) {
+    const hiker = hikers.find((item) => item.id === id);
+    if (hiker) updateBookingStatus(hiker.ticketId, "CHECKED_IN");
     setHikers((current) =>
       current.map((hiker) =>
         hiker.id === id
@@ -149,6 +172,8 @@ export default function PemantauanPage() {
   }
 
   function handleManualCheckOut(id: number) {
+    const hiker = hikers.find((item) => item.id === id);
+    if (hiker) updateBookingStatus(hiker.ticketId, "COMPLETED");
     setHikers((current) =>
       current.map((hiker) =>
         hiker.id === id

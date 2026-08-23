@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
+import { useEffect, useState } from "react";
+import { readMockRepository, updateBookingStatus } from "@/lib/campss";
 
 type Payment = {
   id: string;
@@ -14,35 +14,19 @@ type Payment = {
 };
 
 export default function VerifikasiPembayaranPage() {
-  const [payments, setPayments] = useState<Payment[]>([
-    {
-      id: "CAMPSS-20260812-001",
-      name: "Pendaki CAMPSS",
-      date: "12 Agustus 2026",
-      hikers: 1,
-      total: 40000,
-      method: "DANA",
-      status: "Menunggu",
-    },
-    {
-      id: "CAMPSS-20260812-002",
-      name: "Andi Saputra",
-      date: "12 Agustus 2026",
-      hikers: 2,
-      total: 80000,
-      method: "BRI",
-      status: "Menunggu",
-    },
-    {
-      id: "CAMPSS-20260812-003",
-      name: "Siti Rahma",
-      date: "12 Agustus 2026",
-      hikers: 3,
-      total: 120000,
-      method: "DANA",
-      status: "Menunggu",
-    },
-  ]);
+  const [payments, setPayments] = useState<Payment[]>([]);
+
+  useEffect(() => {
+    queueMicrotask(() => setPayments(readMockRepository().bookings.map((booking) => ({
+      id: booking.bookingId,
+      name: booking.leader.name,
+      date: booking.dateLabel,
+      hikers: booking.participantCount,
+      total: booking.total,
+      method: booking.paymentProofName || "Belum dipilih",
+      status: booking.status === "VERIFIED" || booking.status === "ACTIVE" || booking.status === "CHECKED_IN" || booking.status === "COMPLETED" ? "Diverifikasi" : booking.status === "REJECTED" ? "Ditolak" : "Menunggu",
+    }))));
+  }, []);
 
   const [selectedPayment, setSelectedPayment] =
     useState<Payment | null>(null);
@@ -52,6 +36,7 @@ export default function VerifikasiPembayaranPage() {
   const [rejectReason, setRejectReason] = useState("");
 
   function verifyPayment(id: string) {
+    updateBookingStatus(id, "VERIFIED");
     setPayments((current) =>
       current.map((payment) =>
         payment.id === id
@@ -64,6 +49,7 @@ export default function VerifikasiPembayaranPage() {
   }
 
   function rejectPayment(id: string) {
+    updateBookingStatus(id, "REJECTED");
     setPayments((current) =>
       current.map((payment) =>
         payment.id === id
