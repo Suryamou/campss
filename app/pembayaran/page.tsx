@@ -136,10 +136,9 @@ export default function PembayaranPage() {
 
                 <div className="my-4 flex justify-center">
                   <div className="relative rounded-xl border border-[#dcece5] bg-white p-3 shadow-sm">
-                    <img
-                      src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=Basecamp-Campurejo-QRIS"
+                    <img src="/images/qris.jpeg"
                       alt="QRIS Basecamp Campurejo"
-                      className="h-44 w-44 object-contain"
+                      className="h-90 w-90 object-contain"
                     />
                     <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
                       <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-[#063d2b] text-xs font-bold text-white shadow-md">
@@ -149,66 +148,20 @@ export default function PembayaranPage() {
                   </div>
                 </div>
 
-                <p className="text-xs font-bold uppercase text-[#063d2b]">
-                  NMK: Basecamp Prau via Campurejo
+                <a
+                  href="/images/qris.jpeg"
+                  download="qris-basecamp-campurejo.jpeg"
+                  className=" inline-flex items-center rounded-lg bg-[#17634a] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#0f503b]"
+                >
+                  Download QRIS
+                </a>
+
+                <p className="mt-3 text-xs font-bold uppercase text-[#063d2b]">
+                  Nama QRIS: Basecamp Prau via Campurejo
                 </p>
                 <p className="mt-1 text-[11px] text-gray-500">
                   Scan dengan GoPay, OVO, DANA, ShopeePay, BCA, Mandiri, BRI, dll.
                 </p>
-              </div>
-
-              {/* DANA */}
-              <div className="mt-6 rounded-xl border border-[#dcece5] bg-[#f8fcfa] p-5">
-
-                <div className="flex items-start justify-between gap-4">
-
-                  <div>
-                    <p className="text-xs text-gray-500">
-                      DANA
-                    </p>
-
-                    <p className="mt-1 text-lg font-bold text-[#063d2b]">
-                      085842303879
-                    </p>
-
-                    <p className="mt-1 text-sm text-gray-500">
-                      Sabar Alim
-                    </p>
-                  </div>
-
-                  <span className="rounded-full bg-[#e9f7f1] px-3 py-1 text-xs font-semibold text-[#17634a]">
-                    DANA
-                  </span>
-
-                </div>
-
-              </div>
-
-              {/* BRI */}
-              <div className="mt-4 rounded-xl border border-[#dcece5] bg-[#f8fcfa] p-5">
-
-                <div className="flex items-start justify-between gap-4">
-
-                  <div>
-                    <p className="text-xs text-gray-500">
-                      Bank BRI
-                    </p>
-
-                    <p className="mt-1 text-lg font-bold text-[#063d2b]">
-                      680701005107506
-                    </p>
-
-                    <p className="mt-1 text-sm text-gray-500">
-                      Wahyu Ristianto
-                    </p>
-                  </div>
-
-                  <span className="rounded-full bg-[#e9f7f1] px-3 py-1 text-xs font-semibold text-[#17634a]">
-                    BRI
-                  </span>
-
-                </div>
-
               </div>
 
             </div>
