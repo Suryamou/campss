@@ -16,6 +16,7 @@ type Ticket = {
   hikers: number;
   paymentStatus: "TERVERIFIKASI";
   hikingStatus: TicketStatus;
+  hash: string;
 };
 
 export default function PemindaiPage() {
@@ -24,29 +25,6 @@ export default function PemindaiPage() {
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [message, setMessage] = useState("");
 
-  /*
-    DATA DUMMY
-
-    Nanti data ini akan diganti dengan data dari database/API.
-  */
-  const dummyTickets: Ticket[] = [
-    {
-      id: "CAMPSS-20260812-001",
-      name: "Andi Saputra",
-      date: "12 Agustus 2026",
-      hikers: 2,
-      paymentStatus: "TERVERIFIKASI",
-      hikingStatus: "BELUM_CHECK_IN",
-    },
-    {
-      id: "CAMPSS-20260812-002",
-      name: "Siti Rahma",
-      date: "12 Agustus 2026",
-      hikers: 1,
-      paymentStatus: "TERVERIFIKASI",
-      hikingStatus: "SEDANG_MENDAKI",
-    },
-  ];
 
   useEffect(() => {
     return () => {
@@ -106,85 +84,92 @@ export default function PemindaiPage() {
     setScannerRunning(false);
   }
 
-  function handleScan(decodedText: string) {
-
-    /*
-      Untuk sementara QR berisi ID tiket.
-      Contoh:
-      CAMPSS-20260812-001
-    */
-
-    let bookingId = decodedText;
+  async function handleScan(decodedText: string) {
+    setTicket(null);
+    setMessage("Mencari data tiket...");
 
     try {
-      const qrData = JSON.parse(decodedText) as {
-        bookingId?: string;
-        type?: string;
-      };
+      const token = localStorage.getItem("campss_admin_token");
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/monitoring/ticket/${decodedText}`, {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Accept": "application/json"
+        }
+      });
+      const json = await res.json();
 
-      if (qrData.type !== "E_TIKET_CAMPSS" || !qrData.bookingId) {
-        throw new Error("Invalid ticket QR");
+      if (!res.ok) {
+        throw new Error(json.message || "QR Code tidak valid.");
       }
 
-      bookingId = qrData.bookingId;
-    } catch {
-      // Tetap mendukung QR lama yang hanya berisi booking ID.
-    }
+      const pemesanan = json.data;
+      setTicket({
+        id: pemesanan.id,
+        name: pemesanan.user?.name || "Pengguna",
+        date: pemesanan.tanggal_naik,
+        hikers: pemesanan.jumlah_anggota,
+        paymentStatus: "TERVERIFIKASI",
+        hikingStatus: pemesanan.status_pendakian.toUpperCase() as TicketStatus,
+        hash: pemesanan.qr_code_hash
+      });
 
-    const sharedBooking = readMockRepository().bookings.find(
-      (item) => item.bookingId === bookingId
-    );
-    const foundTicket = sharedBooking
-      ? {
-          id: sharedBooking.bookingId,
-          name: sharedBooking.leader.name,
-          date: sharedBooking.dateLabel,
-          hikers: sharedBooking.participantCount,
-          paymentStatus: "TERVERIFIKASI" as const,
-          hikingStatus: sharedBooking.status === "CHECKED_IN" ? "SEDANG_MENDAKI" as const : sharedBooking.status === "COMPLETED" ? "SELESAI_MENDAKI" as const : "BELUM_CHECK_IN" as const,
-        }
-      : dummyTickets.find((item) => item.id === bookingId);
-
-    if (!foundTicket) {
+      setMessage("E-tiket berhasil ditemukan.");
+      stopScanner();
+    } catch (err: any) {
       setTicket(null);
-      setMessage(
-        "E-tiket tidak ditemukan atau QR Code tidak valid."
-      );
-      return;
+      setMessage(err.message || "E-tiket tidak ditemukan.");
+      stopScanner();
     }
-
-    setTicket(foundTicket);
-    setMessage("E-tiket berhasil ditemukan.");
-
-    stopScanner();
   }
 
-  function handleCheckIn() {
+  async function handleCheckIn() {
     if (!ticket) return;
+    try {
+      const token = localStorage.getItem("campss_admin_token");
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/monitoring/checkin/${ticket.hash}`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Accept": "application/json"
+        }
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message);
 
-    updateBookingStatus(ticket.id, "CHECKED_IN");
-    setTicket({
-      ...ticket,
-      hikingStatus: "SEDANG_MENDAKI",
-    });
+      setTicket({
+        ...ticket,
+        hikingStatus: "SEDANG_MENDAKI",
+      });
 
-    setMessage(
-      "Check-in berhasil. Pendaki sekarang berstatus sedang mendaki."
-    );
+      setMessage("Check-in berhasil. Pendaki sekarang berstatus sedang mendaki.");
+    } catch (err: any) {
+      alert("Gagal Check-in: " + err.message);
+    }
   }
 
-  function handleCheckOut() {
+  async function handleCheckOut() {
     if (!ticket) return;
+    try {
+      const token = localStorage.getItem("campss_admin_token");
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/monitoring/checkout/${ticket.hash}`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Accept": "application/json"
+        }
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message);
 
-    updateBookingStatus(ticket.id, "COMPLETED");
-    setTicket({
-      ...ticket,
-      hikingStatus: "SELESAI_MENDAKI",
-    });
+      setTicket({
+        ...ticket,
+        hikingStatus: "SELESAI_MENDAKI",
+      });
 
-    setMessage(
-      "Check-out berhasil. Pendaki telah selesai mendaki."
-    );
+      setMessage("Check-out berhasil. Pendaki telah selesai mendaki.");
+    } catch (err: any) {
+      alert("Gagal Check-out: " + err.message);
+    }
   }
 
   function resetScanner() {
