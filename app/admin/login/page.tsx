@@ -1,232 +1,165 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { useState, FormEvent } from "react";
+import { useRouter } from "next/navigation";
 
 export default function AdminLoginPage() {
-  const [showPassword, setShowPassword] = useState(false);
-  const [username, setUsername] = useState("");
+  const router = useRouter();
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function handleLogin(e: FormEvent) {
+    e.preventDefault();
     setError("");
-    if (!username.trim() || !password) {
-      setError("Username dan password wajib diisi.");
-      return;
-    }
     setLoading(true);
-    setTimeout(() => {
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "Email atau password salah.");
+      }
+
+      if (data.user.role !== "admin" && data.user.role !== "petugas") {
+        throw new Error("Akses ditolak. Anda bukan admin.");
+      }
+
+      localStorage.setItem("campss_admin_token", data.access_token);
+      localStorage.setItem("campss_admin_user", JSON.stringify(data.user));
+      
+      router.push("/admin/verifikasi");
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
       setLoading(false);
-      setError("Login admin menunggu integrasi autentikasi backend.");
-    }, 400);
+    }
   }
 
   return (
-    <main className="min-h-screen bg-[#f4faf7]">
+    <main className="flex min-h-screen items-center justify-center bg-[#f4faf7] p-6">
 
-      <div className="grid min-h-screen lg:grid-cols-2">
+      <div className="w-full max-w-[1000px] overflow-hidden rounded-2xl bg-white shadow-xl">
 
-        {/* LEFT */}
-        <section className="hidden bg-[#063d2b] p-10 text-white lg:flex lg:flex-col lg:justify-between">
+        <div className="grid lg:grid-cols-2">
 
-          <div>
+          {/* Form */}
+          <div className="p-8 md:p-12">
 
-            <div className="flex items-center gap-3">
-
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 font-bold">
-                C
-              </div>
+            <div className="mx-auto max-w-sm">
 
               <div>
-                <p className="text-lg font-bold">
-                  CAMPSS
-                </p>
-
-                <p className="text-xs text-white/60">
-                  Campurejo Mountain Hiking Information System
-                </p>
-              </div>
-
-            </div>
-
-          </div>
-
-          <div className="max-w-lg">
-
-            <p className="text-sm font-medium text-emerald-300">
-              PANEL ADMINISTRATOR
-            </p>
-
-            <h1 className="mt-4 text-4xl font-bold leading-tight">
-              Kelola Pendakian
-              <br />
-              Gunung Prau via Campurejo
-            </h1>
-
-            <p className="mt-5 text-sm leading-7 text-white/70">
-              Kelola kuota pendakian, verifikasi pembayaran,
-              pemantauan pendaki, pemindaian e-tiket, dan
-              informasi jalur melalui satu panel administrasi.
-            </p>
-
-          </div>
-
-          <p className="text-xs text-white/40">
-            CAMPSS • Panel Administrasi Basecamp Campurejo
-          </p>
-
-        </section>
-
-        {/* RIGHT */}
-        <section className="flex items-center justify-center px-6 py-10">
-
-          <div className="w-full max-w-md">
-
-            {/* Mobile Logo */}
-            <div className="mb-10 text-center lg:hidden">
-
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-[#063d2b] font-bold text-white">
-                C
-              </div>
-
-              <p className="mt-3 text-xl font-bold text-[#063d2b]">
-                CAMPSS
-              </p>
-
-              <p className="mt-1 text-xs text-gray-500">
-                Panel Administrasi Basecamp
-              </p>
-
-            </div>
-
-            {/* Login Card */}
-            <div className="rounded-2xl border border-[#dcece5] bg-white p-7 shadow-sm md:p-9">
-
-              <div>
-
-                <p className="text-sm font-medium text-[#17634a]">
-                  Selamat Datang
-                </p>
-
-                <h2 className="mt-2 text-2xl font-bold text-[#063d2b]">
-                  Login Admin
-                </h2>
-
+                <p className="text-sm font-bold text-[#17634a]">CAMPSS ADMIN</p>
+                <h1 className="mt-2 text-2xl font-bold text-[#063d2b] md:text-3xl">
+                  Dashboard Login
+                </h1>
                 <p className="mt-2 text-sm leading-6 text-gray-500">
-                  Masuk menggunakan akun administrator
-                  yang telah ditentukan.
+                  Masuk sebagai pengelola Basecamp Campurejo untuk
+                  memverifikasi tiket dan memantau status pendaki.
                 </p>
-
               </div>
 
-              <form onSubmit={handleSubmit}>
-
-              {/* Username */}
-              <div className="mt-7">
-
-                <label className="mb-2 block text-sm font-medium text-gray-700">
-                  Username Admin
-                </label>
-
-                <input
-                  type="text"
-                  value={username}
-                  onChange={(event) => setUsername(event.target.value)}
-                  placeholder="Masukkan username"
-                  className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-[#17634a] focus:ring-2 focus:ring-[#17634a]/10"
-                />
-
-              </div>
-
-              {/* Password */}
-              <div className="mt-5">
-
-                <label className="mb-2 block text-sm font-medium text-gray-700">
-                  Password
-                </label>
-
-                <div className="relative">
-
+              <form onSubmit={handleLogin}>
+                <div className="mt-7">
+                  <label className="mb-2 block text-sm font-medium text-gray-700">
+                    Email Admin
+                  </label>
                   <input
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(event) => setPassword(event.target.value)}
-                    placeholder="Masukkan password"
-                    className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 pr-20 text-sm outline-none transition focus:border-[#17634a] focus:ring-2 focus:ring-[#17634a]/10"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    placeholder="admin@campss.com"
+                    className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-[#17634a] focus:ring-2 focus:ring-[#17634a]/10"
                   />
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setShowPassword(!showPassword)
-                    }
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-[#17634a]"
-                  >
-                    {showPassword ? "Sembunyikan" : "Lihat"}
-                  </button>
-
                 </div>
 
-              </div>
+                <div className="mt-5">
+                  <label className="mb-2 block text-sm font-medium text-gray-700">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      placeholder="Masukkan password"
+                      className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 pr-20 text-sm outline-none transition focus:border-[#17634a] focus:ring-2 focus:ring-[#17634a]/10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-[#17634a]"
+                    >
+                      {showPassword ? "Sembunyikan" : "Lihat"}
+                    </button>
+                  </div>
+                </div>
 
-              {/* Login */}
-              <button
-                type="submit"
-                disabled={loading}
-                className="mt-7 w-full rounded-lg bg-[#063d2b] px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-[#052f22]"
-              >
-                {loading ? "Memproses..." : "Masuk ke Dashboard"}
-              </button>
+                {error && (
+                  <div className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-500">
+                    {error}
+                  </div>
+                )}
 
-              {error && (
-                <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-xs font-medium text-red-700">
-                  {error}
-                </p>
-              )}
-
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className={`mt-7 w-full rounded-lg px-5 py-3.5 text-sm font-semibold text-white transition ${loading ? "bg-gray-400 cursor-not-allowed" : "bg-[#063d2b] hover:bg-[#052f22]"}`}
+                >
+                  {loading ? "Memproses..." : "Masuk ke Dashboard"}
+                </button>
               </form>
 
-              {/* Security */}
               <div className="mt-6 rounded-lg bg-[#f4faf7] p-4">
-
-                <div className="flex gap-3">
-
-                  <div className="mt-0.5 text-sm">
-                    🔒
-                  </div>
-
-                  <div>
-
-                    <p className="text-xs font-semibold text-[#063d2b]">
-                      Akses Terbatas
-                    </p>
-
-                    <p className="mt-1 text-xs leading-5 text-gray-500">
-                      Halaman ini khusus administrator Basecamp.
-                      Jangan membagikan informasi akun kepada
-                      pihak lain.
-                    </p>
-
-                  </div>
-
-                </div>
-
+                <p className="text-xs leading-5 text-[#17634a]">
+                  <span className="font-semibold">Info Keamanan:</span> Halaman
+                  ini dikhususkan untuk pengurus basecamp. Setiap
+                  aktivitas akan dicatat dalam sistem.
+                </p>
               </div>
 
             </div>
 
-            <p className="mt-6 text-center text-xs text-gray-400">
-              © 2026 CAMPSS • Basecamp Campurejo
-            </p>
-
           </div>
 
-        </section>
-
+          <div className="hidden bg-[#063d2b] p-12 lg:flex lg:flex-col lg:justify-between">
+            <div>
+              <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 text-2xl">
+                ⛰️
+              </div>
+              <h2 className="mt-8 text-3xl font-bold leading-tight text-white">
+                Sistem Manajemen<br />Pendakian Prau
+              </h2>
+              <p className="mt-4 max-w-sm text-sm leading-relaxed text-emerald-100/80">
+                Aplikasi terintegrasi untuk memudahkan pengelolaan tiket,
+                pemantauan kuota harian, hingga pelacakan status
+                seluruh pendaki di jalur Campurejo.
+              </p>
+            </div>
+            <div className="border-t border-white/10 pt-8">
+              <p className="text-sm font-medium text-emerald-100">
+                Pusat Bantuan Admin
+              </p>
+              <p className="mt-1 text-xs text-emerald-100/60">
+                Hubungi tim IT Support jika mengalami kendala login
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
-
     </main>
   );
 }

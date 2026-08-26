@@ -32,7 +32,35 @@ const menuItems = [
 ];
 
 export default function Navbar() {
+  
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userName, setUserName] = useState("");
+
+  React.useEffect(() => {
+    const loggedIn = localStorage.getItem("campss_logged_in") === "true" || sessionStorage.getItem("campss_logged_in") === "true";
+    if (loggedIn) {
+      setIsLoggedIn(true);
+      const userStr = localStorage.getItem("campss_user") || sessionStorage.getItem("campss_user");
+      if (userStr) {
+        try {
+          const user = JSON.parse(userStr);
+          setUserName(user.name);
+        } catch(e){}
+      }
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("campss_logged_in");
+    localStorage.removeItem("campss_access_token");
+    localStorage.removeItem("campss_user");
+    sessionStorage.removeItem("campss_logged_in");
+    sessionStorage.removeItem("campss_access_token");
+    sessionStorage.removeItem("campss_user");
+    window.location.href = "/login";
+  };
+
 
   const closeMenu = () => {
     setMenuOpen(false);
@@ -102,12 +130,26 @@ export default function Navbar() {
 
           {/* Login Desktop */}
           <div className="hidden md:block">
-            <Link
-              href="/login"
-              className="rounded-full bg-emerald-950 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-900/20 transition hover:-translate-y-0.5 hover:bg-emerald-800"
-            >
-              Masuk
-            </Link>
+            {isLoggedIn ? (
+              <div className="flex items-center gap-4">
+                <Link href="/riwayat-pemesanan" className="text-sm font-medium text-emerald-950 hover:underline">
+                  Riwayat
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="rounded-full bg-red-50 text-red-600 px-5 py-2.5 text-sm font-semibold transition hover:bg-red-100"
+                >
+                  Keluar
+                </button>
+              </div>
+            ) : (
+              <Link
+                href="/login"
+                className="rounded-full bg-emerald-950 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-900/20 transition hover:-translate-y-0.5 hover:bg-emerald-800"
+              >
+                Masuk
+              </Link>
+            )}
           </div>
 
           {/* Mobile Button */}
@@ -145,13 +187,31 @@ export default function Navbar() {
               ))}
 
               {/* Login Mobile */}
-              <Link
-                href="/login"
-                onClick={closeMenu}
-                className="mt-2 block rounded-xl bg-emerald-950 px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-emerald-800"
-              >
-                Masuk
-              </Link>
+              {isLoggedIn ? (
+                <>
+                  <Link
+                    href="/riwayat-pemesanan"
+                    onClick={closeMenu}
+                    className="mt-2 block rounded-xl bg-emerald-100 px-4 py-3 text-center text-sm font-semibold text-emerald-950 transition hover:bg-emerald-200"
+                  >
+                    Riwayat Pemesanan
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="mt-2 w-full block rounded-xl bg-red-100 px-4 py-3 text-center text-sm font-semibold text-red-600 transition hover:bg-red-200"
+                  >
+                    Keluar
+                  </button>
+                </>
+              ) : (
+                <Link
+                  href="/login"
+                  onClick={closeMenu}
+                  className="mt-2 block rounded-xl bg-emerald-950 px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-emerald-800"
+                >
+                  Masuk
+                </Link>
+              )}
 
             </div>
 

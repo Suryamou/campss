@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { BookingDraft, formatCurrency, readBookingHistory } from "@/lib/campss";
+import { useRouter } from "next/navigation";
 
 type StatusPemesanan =
   | "TERVERIFIKASI"
   | "MENUNGGU PEMBAYARAN"
   | "MENUNGGU VERIFIKASI"
+  | "DITOLAK"
   | "SELESAI";
 
 type Pemesanan = {
@@ -20,36 +21,105 @@ type Pemesanan = {
   status: StatusPemesanan;
 };
 
+function formatDateIndo(dateStr: string) {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  const months = [
+    "Januari",
+    "Februari",
+    "Maret",
+    "April",
+    "Mei",
+    "Juni",
+    "Juli",
+    "Agustus",
+    "September",
+    "Oktober",
+    "November",
+    "Desember",
+  ];
+  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+}
+
 export default function RiwayatPemesananPage() {
-  const [filter, setFilter] = useState<"SEMUA" | StatusPemesanan>("SEMUA");
+  const router = useRouter();
   const [dataPemesanan, setDataPemesanan] = useState<Pemesanan[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<"SEMUA" | StatusPemesanan>("SEMUA");
 
   useEffect(() => {
-    queueMicrotask(() => setDataPemesanan(readBookingHistory().map((item: BookingDraft) => ({
-      id: item.bookingId,
-      tanggalPemesanan: new Date(item.createdAt).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }),
-      tanggalPendakian: item.dateLabel,
-      jalur: item.route,
-      jumlahPendaki: item.participantCount,
-      total: item.total,
-      status: item.status === "WAITING_VERIFICATION" ? "MENUNGGU VERIFIKASI" : item.status === "PENDING_PAYMENT" ? "MENUNGGU PEMBAYARAN" : item.status === "COMPLETED" ? "SELESAI" : "TERVERIFIKASI",
-    }))));
-  }, []);
+    const loggedIn =
+      localStorage.getItem("campss_logged_in") === "true" ||
+      sessionStorage.getItem("campss_logged_in") === "true";
+    if (!loggedIn) {
+      router.push("/login");
+      return;
+    }
+
+    async function fetchMyPemesanan() {
+      try {
+        const token =
+          localStorage.getItem("campss_access_token") ||
+          sessionStorage.getItem("campss_access_token");
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/user/pemesanan`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        if (res.ok) {
+          const json = await res.json();
+          const mapped: Pemesanan[] = json.data.map((item: any) => {
+            let status: StatusPemesanan = "MENUNGGU PEMBAYARAN";
+            if (item.status_pembayaran === "diverifikasi") {
+              if (item.status_pendakian === "check_out") {
+                status = "SELESAI";
+              } else {
+                status = "TERVERIFIKASI";
+              }
+            } else if (item.status_pembayaran === "ditolak") {
+              status = "DITOLAK";
+            } else if (item.status_pembayaran === "menunggu") {
+              if (item.pembayaran) {
+                status = "MENUNGGU VERIFIKASI";
+              } else {
+                status = "MENUNGGU PEMBAYARAN";
+              }
+            }
+
+            return {
+              id: item.id,
+              tanggalPemesanan: formatDateIndo(item.created_at),
+              tanggalPendakian: formatDateIndo(item.tanggal_naik),
+              jalur: item.jalur?.nama_jalur || "Gunung Prau via Campurejo",
+              jumlahPendaki: item.jumlah_anggota,
+              total: item.total_harga,
+              status: status,
+            };
+          });
+          setDataPemesanan(mapped);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchMyPemesanan();
+  }, [router]);
 
   const pemesananDitampilkan =
     filter === "SEMUA"
       ? dataPemesanan
-      : dataPemesanan.filter(
-          (item) => item.status === filter
-        );
+      : dataPemesanan.filter((p) => p.status === filter);
 
   return (
     <main className="min-h-screen bg-[#f4faf7]">
-
-      {/* HEADER */}
       <section className="border-b border-[#dcece5] bg-white">
-        <div className="mx-auto max-w-7xl px-6 py-8">
-
+        <div className="mx-auto max-w-7xl px-6 py-10">
           <Link
             href="/"
             className="text-sm font-medium text-[#17634a] hover:underline"
@@ -57,282 +127,140 @@ export default function RiwayatPemesananPage() {
             ← Kembali ke Beranda
           </Link>
 
-          <div className="mt-6">
+          <h1 className="mt-5 text-3xl font-bold text-[#063d2b] md:text-4xl">
+            Riwayat Pemesanan
+          </h1>
 
-            <p className="text-sm font-medium text-[#17634a]">
-              Akun CAMPSS
-            </p>
-
-            <h1 className="mt-2 text-3xl font-bold text-[#063d2b] md:text-4xl">
-              Riwayat Pemesanan
-            </h1>
-
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-500">
-              Lihat seluruh riwayat pemesanan tiket pendakian
-              Gunung Prau via Campurejo.
-            </p>
-
-          </div>
-
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-600">
+            Daftar tiket pendakian yang pernah kamu pesan melalui CAMPSS.
+          </p>
         </div>
       </section>
 
-      {/* CONTENT */}
       <section className="mx-auto max-w-7xl px-6 py-10">
-
-        {/* FILTER */}
-        <div className="mb-6 rounded-xl border border-[#dcece5] bg-white p-4 shadow-sm">
-
-          <div className="flex flex-wrap gap-2">
-
-            <FilterButton
-              active={filter === "SEMUA"}
-              onClick={() => setFilter("SEMUA")}
-            >
-              Semua
-            </FilterButton>
-
-            <FilterButton
-              active={filter === "TERVERIFIKASI"}
-              onClick={() => setFilter("TERVERIFIKASI")}
-            >
-              Terverifikasi
-            </FilterButton>
-
-            <FilterButton
-              active={filter === "MENUNGGU PEMBAYARAN"}
-              onClick={() =>
-                setFilter("MENUNGGU PEMBAYARAN")
-              }
-            >
-              Menunggu Pembayaran
-            </FilterButton>
-
-            <FilterButton
-              active={filter === "MENUNGGU VERIFIKASI"}
-              onClick={() =>
-                setFilter("MENUNGGU VERIFIKASI")
-              }
-            >
-              Menunggu Verifikasi
-            </FilterButton>
-
-            <FilterButton
-              active={filter === "SELESAI"}
-              onClick={() => setFilter("SELESAI")}
-            >
-              Selesai
-            </FilterButton>
-
-          </div>
-
+        <div className="mb-6 flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+          {["SEMUA", "TERVERIFIKASI", "MENUNGGU PEMBAYARAN", "MENUNGGU VERIFIKASI", "DITOLAK", "SELESAI"].map(
+            (status) => (
+              <button
+                key={status}
+                onClick={() => setFilter(status as any)}
+                className={`whitespace-nowrap rounded-full px-5 py-2.5 text-sm font-semibold transition ${
+                  filter === status
+                    ? "bg-[#063d2b] text-white"
+                    : "bg-white text-gray-500 hover:bg-gray-100"
+                }`}
+              >
+                {status === "SEMUA" ? "Semua Pesanan" : status}
+              </button>
+            )
+          )}
         </div>
 
-        {/* LIST PEMESANAN */}
-        <div className="space-y-5">
+        {loading ? (
+          <div className="flex justify-center py-20 text-sm text-gray-500">
+            Memuat riwayat pemesanan...
+          </div>
+        ) : pemesananDitampilkan.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-[#cfe6dc] bg-[#f8fcfa] p-12 text-center">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#e5f4ee] text-3xl">
+              🏕️
+            </div>
 
-          {pemesananDitampilkan.length > 0 ? (
-            pemesananDitampilkan.map((item) => (
+            <p className="mt-5 text-sm font-semibold text-[#063d2b]">
+              Belum Ada Pemesanan
+            </p>
+            <p className="mt-2 text-xs text-gray-500">
+              Kamu belum memiliki riwayat pemesanan tiket pendakian.
+            </p>
+
+            <Link
+              href="/cek-kuota"
+              className="mt-6 inline-block rounded-lg bg-[#063d2b] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#052f22]"
+            >
+              Mulai Pendakian
+            </Link>
+          </div>
+        ) : (
+          <div className="grid gap-5">
+            {pemesananDitampilkan.map((item) => (
               <div
                 key={item.id}
-                className="overflow-hidden rounded-xl border border-[#dcece5] bg-white shadow-sm"
+                className="overflow-hidden rounded-xl border border-[#dcece5] bg-white shadow-sm transition hover:shadow-md"
               >
-
-                {/* TOP */}
-                <div className="flex flex-col gap-4 border-b border-gray-100 p-5 md:flex-row md:items-center md:justify-between">
-
-                  <div>
-
-                    <p className="text-xs text-gray-400">
-                      Nomor Pemesanan
-                    </p>
-
-                    <p className="mt-1 font-bold text-[#063d2b]">
-                      {item.id}
-                    </p>
-
+                <div className="flex flex-col gap-4 border-b border-gray-100 bg-[#f8fcfa] px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-center gap-4">
+                    <span className="text-xs font-medium text-gray-500">
+                      ID: <span className="text-gray-900">{item.id}</span>
+                    </span>
+                    <span className="h-4 w-px bg-gray-300" />
+                    <span className="text-xs font-medium text-gray-500">
+                      Dipesan: {item.tanggalPemesanan}
+                    </span>
                   </div>
 
-                  <StatusBadge status={item.status} />
-
+                  <span
+                    className={`inline-flex w-fit items-center rounded-full px-3 py-1 text-[11px] font-bold tracking-wide ${
+                      item.status === "TERVERIFIKASI"
+                        ? "bg-emerald-100 text-emerald-700"
+                        : item.status === "SELESAI"
+                        ? "bg-blue-100 text-blue-700"
+                        : item.status === "DITOLAK"
+                        ? "bg-red-100 text-red-700"
+                        : "bg-yellow-100 text-yellow-700"
+                    }`}
+                  >
+                    {item.status}
+                  </span>
                 </div>
 
-                {/* BODY */}
-                <div className="p-5">
-
-                  <div className="grid gap-5 md:grid-cols-4">
-
-                    <Info
-                      label="Tanggal Pendakian"
-                      value={item.tanggalPendakian}
-                    />
-
-                    <Info
-                      label="Jalur"
-                      value={item.jalur}
-                    />
-
-                    <Info
-                      label="Jumlah Pendaki"
-                      value={`${item.jumlahPendaki} orang`}
-                    />
-
-                    <Info
-                      label="Total Pembayaran"
-                      value={formatCurrency(item.total)}
-                    />
-
-                  </div>
-
-                  {/* FOOTER */}
-                  <div className="mt-6 flex flex-col gap-3 border-t border-gray-100 pt-5 sm:flex-row sm:items-center sm:justify-between">
-
-                    <p className="text-xs text-gray-400">
-                      Dipesan pada {item.tanggalPemesanan}
-                    </p>
-
-                    <div className="flex flex-wrap gap-2">
-
-                      {item.status === "TERVERIFIKASI" && (
-                        <Link
-                          href="/e-tiket"
-                          className="rounded-lg bg-[#063d2b] px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-[#052f22]"
-                        >
-                          Lihat E-Tiket
-                        </Link>
-                      )}
-
-                      <button
-                        type="button"
-                        className="rounded-lg border border-[#dcece5] px-4 py-2.5 text-xs font-semibold text-[#17634a] transition hover:bg-[#f4faf7]"
-                      >
-                        Detail Pesanan
-                      </button>
-
-                    </div>
-
-                  </div>
-
+                <div className="grid gap-6 p-6 sm:grid-cols-2 lg:grid-cols-4">
+                  <Info label="Gunung & Jalur" value={item.jalur} />
+                  <Info
+                    label="Tanggal Pendakian"
+                    value={item.tanggalPendakian}
+                  />
+                  <Info
+                    label="Jumlah Pendaki"
+                    value={`${item.jumlahPendaki} Orang`}
+                  />
+                  <Info
+                    label="Total Pembayaran"
+                    value={`Rp ${item.total.toLocaleString("id-ID")}`}
+                  />
                 </div>
 
+                <div className="flex items-center justify-end gap-3 bg-gray-50 px-6 py-4">
+                  {item.status === "MENUNGGU PEMBAYARAN" && (
+                    <Link
+                      href={`/pembayaran?id=${item.id}`}
+                      className="rounded-lg bg-[#063d2b] px-4 py-2 text-xs font-semibold text-white hover:bg-[#052f22]"
+                    >
+                      Bayar Sekarang
+                    </Link>
+                  )}
+                  {item.status === "TERVERIFIKASI" && (
+                    <Link
+                      href={`/e-tiket?id=${item.id}`}
+                      className="rounded-lg border border-[#063d2b] bg-white px-4 py-2 text-xs font-semibold text-[#063d2b] hover:bg-gray-50"
+                    >
+                      Lihat E-Tiket
+                    </Link>
+                  )}
+                </div>
               </div>
-            ))
-          ) : (
-            <div className="rounded-xl border border-[#dcece5] bg-white p-10 text-center shadow-sm">
-
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#e5f4ee] text-2xl">
-                📋
-              </div>
-
-              <h2 className="mt-4 font-bold text-[#063d2b]">
-                Belum Ada Pemesanan
-              </h2>
-
-              <p className="mt-2 text-sm text-gray-500">
-                Tidak ada riwayat pemesanan dengan status
-                tersebut.
-              </p>
-
-              <Link
-                href="/cek-kuota"
-                className="mt-5 inline-block rounded-lg bg-[#063d2b] px-5 py-3 text-sm font-semibold text-white"
-              >
-                Cari Jadwal Pendakian
-              </Link>
-
-            </div>
-          )}
-
-        </div>
-
-        {/* INFO */}
-        <div className="mt-8 rounded-xl border border-[#cfe6dc] bg-[#e9f7f1] p-5">
-
-          <h3 className="font-semibold text-[#063d2b]">
-            Informasi Pemesanan
-          </h3>
-
-          <p className="mt-2 text-sm leading-6 text-gray-600">
-            Riwayat pemesanan menampilkan status tiket,
-            tanggal pendakian, jumlah pendaki, dan total
-            pembayaran. E-Tiket dapat digunakan setelah
-            pembayaran berhasil diverifikasi oleh admin
-            Basecamp Campurejo.
-          </p>
-
-        </div>
-
+            ))}
+          </div>
+        )}
       </section>
-
     </main>
   );
 }
 
-function FilterButton({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`rounded-lg px-4 py-2.5 text-xs font-semibold transition ${
-        active
-          ? "bg-[#063d2b] text-white"
-          : "border border-gray-200 bg-white text-gray-500 hover:bg-gray-50"
-      }`}
-    >
-      {children}
-    </button>
-  );
-}
-
-function StatusBadge({
-  status,
-}: {
-  status: StatusPemesanan;
-}) {
-  const style =
-    status === "TERVERIFIKASI"
-      ? "bg-emerald-100 text-emerald-700"
-      : status === "SELESAI"
-      ? "bg-blue-100 text-blue-700"
-      : status === "MENUNGGU PEMBAYARAN"
-      ? "bg-yellow-100 text-yellow-700"
-      : "bg-orange-100 text-orange-700";
-
-  return (
-    <span
-      className={`w-fit rounded-full px-3 py-1.5 text-[10px] font-bold ${style}`}
-    >
-      {status}
-    </span>
-  );
-}
-
-function Info({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
+function Info({ label, value }: { label: string; value: string }) {
   return (
     <div>
-
-      <p className="text-xs text-gray-400">
-        {label}
-      </p>
-
-      <p className="mt-1 text-sm font-semibold text-[#063d2b]">
-        {value}
-      </p>
-
+      <p className="text-xs text-gray-500">{label}</p>
+      <p className="mt-1 text-sm font-semibold text-[#063d2b]">{value}</p>
     </div>
   );
 }

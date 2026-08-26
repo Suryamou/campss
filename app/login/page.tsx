@@ -15,7 +15,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");
 
-  function handleLogin(event: FormEvent<HTMLFormElement>) {
+  async function handleLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     setError("");
@@ -31,23 +31,44 @@ export default function LoginPage() {
     }
 
     setLoading(true);
-    const user = {
-      id: `user-${email.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
-      name: email.trim().split("@")[0],
-      email: email.trim(),
-      role: "user" as const,
-    };
-    window.sessionStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
-    if (remember) {
-      localStorage.setItem("campss_logged_in", "true");
-      localStorage.setItem("campss_user_email", email.trim());
-    } else {
-      sessionStorage.setItem("campss_logged_in", "true");
-      sessionStorage.setItem("campss_user_email", email.trim());
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+        body: JSON.stringify({
+          email: email.trim(),
+          password: password,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "Email atau kata sandi salah.");
+      }
+
+      // Simpan token dan status login
+      if (remember) {
+        localStorage.setItem("campss_logged_in", "true");
+        localStorage.setItem("campss_access_token", data.access_token);
+        localStorage.setItem("campss_user", JSON.stringify(data.user));
+      } else {
+        sessionStorage.setItem("campss_logged_in", "true");
+        sessionStorage.setItem("campss_access_token", data.access_token);
+        sessionStorage.setItem("campss_user", JSON.stringify(data.user));
+      }
+
+      setSuccess("Login berhasil. Mengarahkan ke beranda...");
+      setTimeout(() => router.push("/"), 500);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-    setSuccess("Login berhasil. Mengarahkan ke beranda...");
-    setLoading(false);
-    setTimeout(() => router.push("/"), 500);
   }
 
   return (

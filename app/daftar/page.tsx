@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { USER_STORAGE_KEY } from "@/lib/campss";
 
 export default function DaftarPage() {
   const router = useRouter();
@@ -15,7 +14,7 @@ export default function DaftarPage() {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
     setSuccess("");
@@ -39,17 +38,38 @@ export default function DaftarPage() {
       setError("Persetujuan ketentuan wajib dicentang.");
       return;
     }
+
     setLoading(true);
-    window.sessionStorage.setItem(USER_STORAGE_KEY, JSON.stringify({
-      id: `user-${form.email.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
-      name: form.name.trim(),
-      email: form.email.trim(),
-      phone: form.phone.trim(),
-      role: "user",
-    }));
-    setSuccess("Pendaftaran berhasil. Silakan masuk untuk melanjutkan.");
-    setLoading(false);
-    setTimeout(() => router.push("/login"), 700);
+    
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+        body: JSON.stringify({
+          name: form.name.trim(),
+          email: form.email.trim(),
+          phone: form.phone.trim(),
+          password: form.password,
+          password_confirmation: form.confirmPassword,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "Gagal mendaftar. Silakan periksa kembali data Anda.");
+      }
+
+      setSuccess("Pendaftaran berhasil! Silakan masuk untuk melanjutkan.");
+      setTimeout(() => router.push("/login"), 1000);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -137,6 +157,7 @@ export default function DaftarPage() {
                   value={form.name}
                   onChange={(event) => setForm({ ...form, name: event.target.value })}
                   placeholder="Masukkan nama lengkap"
+                  required
                   className="w-full rounded-lg border border-gray-200 bg-[#f8fbf9] px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 outline-none transition focus:border-[#17634a] focus:bg-white focus:ring-2 focus:ring-[#17634a]/10"
                 />
               </div>
@@ -156,6 +177,7 @@ export default function DaftarPage() {
                   value={form.email}
                   onChange={(event) => setForm({ ...form, email: event.target.value })}
                   placeholder="Masukkan email"
+                  required
                   className="w-full rounded-lg border border-gray-200 bg-[#f8fbf9] px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 outline-none transition focus:border-[#17634a] focus:bg-white focus:ring-2 focus:ring-[#17634a]/10"
                 />
               </div>
@@ -175,6 +197,7 @@ export default function DaftarPage() {
                   value={form.phone}
                   onChange={(event) => setForm({ ...form, phone: event.target.value })}
                   placeholder="Contoh: 081234567890"
+                  required
                   className="w-full rounded-lg border border-gray-200 bg-[#f8fbf9] px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 outline-none transition focus:border-[#17634a] focus:bg-white focus:ring-2 focus:ring-[#17634a]/10"
                 />
               </div>
@@ -196,6 +219,7 @@ export default function DaftarPage() {
                     value={form.password}
                     onChange={(event) => setForm({ ...form, password: event.target.value })}
                     placeholder="Masukkan kata sandi"
+                    required
                     className="w-full rounded-lg border border-gray-200 bg-[#f8fbf9] px-4 py-3 pr-20 text-sm text-gray-900 placeholder:text-gray-400 outline-none transition focus:border-[#17634a] focus:bg-white focus:ring-2 focus:ring-[#17634a]/10"
                   />
 
@@ -233,6 +257,7 @@ export default function DaftarPage() {
                     value={form.confirmPassword}
                     onChange={(event) => setForm({ ...form, confirmPassword: event.target.value })}
                     placeholder="Ulangi kata sandi"
+                    required
                     className="w-full rounded-lg border border-gray-200 bg-[#f8fbf9] px-4 py-3 pr-20 text-sm text-gray-900 placeholder:text-gray-400 outline-none transition focus:border-[#17634a] focus:bg-white focus:ring-2 focus:ring-[#17634a]/10"
                   />
 
@@ -261,6 +286,7 @@ export default function DaftarPage() {
                   type="checkbox"
                   checked={agreement}
                   onChange={(event) => setAgreement(event.target.checked)}
+                  required
                   className="mt-1 h-4 w-4 accent-[#17634a]"
                 />
 
@@ -285,9 +311,9 @@ export default function DaftarPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full rounded-lg bg-[#063d2b] px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-[#052f22]"
+                className={`w-full rounded-lg px-5 py-3.5 text-sm font-semibold text-white transition ${loading ? "bg-gray-400 cursor-not-allowed" : "bg-[#063d2b] hover:bg-[#052f22]"}`}
               >
-                {loading ? "Memproses..." : "Daftar"}
+                {loading ? "Mendaftar..." : "Daftar"}
               </button>
 
             </form>

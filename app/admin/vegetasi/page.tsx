@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { QRCodeSVG } from "qrcode.react";
 
 type Vegetation = {
@@ -15,40 +15,37 @@ type Vegetation = {
   status: "AKTIF" | "DRAFT";
 };
 
-const initialVegetation: Vegetation[] = [
-  {
-    id: 1,
-    name: "Edelweiss Jawa",
-    scientificName: "Anaphalis javanica",
-    habitat: "Zona pegunungan tinggi",
-    description:
-      "Tumbuhan khas pegunungan yang dapat ditemukan pada kawasan dengan kondisi lingkungan tertentu.",
-    role:
-      "Bagian dari ekosistem pegunungan dan memiliki nilai edukasi konservasi.",
-    image:
-      "https://images.unsplash.com/photo-1497250681960-ef046c08a56e",
-    qrCode: "VEG-CAMPSS-001",
-    status: "AKTIF",
-  },
-  {
-    id: 2,
-    name: "Cantigi",
-    scientificName: "Vaccinium varingiaefolium",
-    habitat: "Hutan pegunungan",
-    description:
-      "Tumbuhan yang umum dijumpai pada kawasan pegunungan dan memiliki kemampuan beradaptasi terhadap lingkungan.",
-    role:
-      "Mendukung keseimbangan ekosistem dan menjadi bagian dari vegetasi kawasan pegunungan.",
-    image:
-      "https://images.unsplash.com/photo-1441974231531-c6227db76b6e",
-    qrCode: "VEG-CAMPSS-002",
-    status: "AKTIF",
-  },
-];
+
 
 export default function KelolaVegetasiPage() {
-  const [vegetations, setVegetations] =
-    useState(initialVegetation);
+  const [vegetations, setVegetations] = useState<Vegetation[]>([]);
+
+  useEffect(() => {
+    fetchVegetasi();
+  }, []);
+
+  async function fetchVegetasi() {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/vegetasi`);
+      if (res.ok) {
+        const json = await res.json();
+        const formatted = json.data.map((item: any) => ({
+          id: item.id,
+          name: item.nama,
+          scientificName: item.nama_latin,
+          habitat: item.kategori || item.lokasi || "-",
+          description: item.deskripsi,
+          role: item.peran_ekologis,
+          image: item.foto?.startsWith("http") ? item.foto : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}/storage/${item.foto}`,
+          qrCode: `VEG-CAMPSS-${String(item.id).padStart(3, "0")}`,
+          status: "AKTIF",
+        }));
+        setVegetations(formatted);
+      }
+    } catch (err) {
+      console.error("Gagal mengambil data vegetasi", err);
+    }
+  }
 
   const [showForm, setShowForm] = useState(false);
 
@@ -63,7 +60,7 @@ export default function KelolaVegetasiPage() {
     habitat: "",
     description: "",
     role: "",
-    image: "",
+    image: null as File | null,
   });
   const [formError, setFormError] = useState("");
 
@@ -76,65 +73,75 @@ export default function KelolaVegetasiPage() {
     );
   });
 
-  function handleSubmit(event: React.FormEvent) {
+  async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     setFormError("");
 
-    if (
-      !form.name ||
-      !form.scientificName ||
-      !form.habitat ||
-      !form.description
-    ) {
+    if (!form.name || !form.scientificName || !form.habitat || !form.description) {
       setFormError("Nama, nama ilmiah, habitat, dan deskripsi wajib diisi.");
       return;
     }
 
-    const newVegetation: Vegetation = {
-      id: Date.now(),
-      name: form.name,
-      scientificName: form.scientificName,
-      habitat: form.habitat,
-      description: form.description,
-      role: form.role,
-      image:
-        form.image ||
-        "https://images.unsplash.com/photo-1441974231531-c6227db76b6e",
-      qrCode: `VEG-CAMPSS-${String(
-        vegetations.length + 1
-      ).padStart(3, "0")}`,
-      status: "AKTIF",
-    };
+    try {
+      const token = localStorage.getItem("campss_admin_token") || sessionStorage.getItem("campss_admin_token");
+      
+      const formData = new FormData();
+      formData.append("nama", form.name);
+      formData.append("nama_latin", form.scientificName);
+      formData.append("kategori", form.habitat);
+      formData.append("deskripsi", form.description);
+      formData.append("peran_ekologis", form.role);
+      if (form.image) {
+        formData.append("foto", form.image);
+      }
 
-    setVegetations((current) => [
-      ...current,
-      newVegetation,
-    ]);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/vegetasi`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData
+      });
 
-    setForm({
-      name: "",
-      scientificName: "",
-      habitat: "",
-      description: "",
-      role: "",
-      image: "",
-    });
-
-    setShowForm(false);
+      if (res.ok) {
+        setForm({
+          name: "",
+          scientificName: "",
+          habitat: "",
+          description: "",
+          role: "",
+          image: null,
+        });
+        setShowForm(false);
+        fetchVegetasi(); // Reload data
+      } else {
+        alert("Gagal menyimpan data vegetasi");
+      }
+    } catch (err) {
+      alert("Gagal terhubung ke server");
+    }
   }
 
-  function deleteVegetation(id: number) {
-    const confirmed = window.confirm(
-      "Yakin ingin menghapus data vegetasi ini?"
-    );
-
+  async function deleteVegetation(id: number) {
+    const confirmed = window.confirm("Yakin ingin menghapus data vegetasi ini?");
     if (!confirmed) return;
 
-    setVegetations((current) =>
-      current.filter((item) => item.id !== id)
-    );
-
-    setSelected(null);
+    try {
+      const token = localStorage.getItem("campss_admin_token") || sessionStorage.getItem("campss_admin_token");
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/vegetasi/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (res.ok) {
+        setVegetations((current) => current.filter((item) => item.id !== id));
+        setSelected(null);
+      } else {
+        alert("Gagal menghapus data");
+      }
+    } catch (err) {
+      alert("Gagal terhubung ke server");
+    }
   }
 
   return (
@@ -443,17 +450,17 @@ export default function KelolaVegetasiPage() {
                 </p>
               )}
 
-              <Input
-                label="URL Foto"
-                placeholder="https://..."
-                value={form.image}
-                onChange={(value) =>
-                  setForm({
-                    ...form,
-                    image: value,
-                  })
-                }
-              />
+              <div>
+                <label className="mb-2 block text-xs font-semibold text-gray-600">
+                  Upload Foto
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setForm({ ...form, image: e.target.files?.[0] || null })}
+                  className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:border-[#073d2b] focus:outline-none focus:ring-1 focus:ring-[#073d2b]"
+                />
+              </div>
 
               <div className="flex gap-3 pt-2">
 

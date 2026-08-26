@@ -1,36 +1,68 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Campss Backend API (Laravel 11 + Docker)
 
-## Getting Started
+Backend ini melayani seluruh kebutuhan API untuk aplikasi **Campss** (Pemesanan Tiket Gunung). Dibangun menggunakan Laravel 11 dan berjalan sepenuhnya di dalam lingkungan **Docker (Laravel Sail)**.
 
-First, run the development server:
+## 🚀 Persyaratan Sistem
+- [Docker Desktop](https://docs.docker.com/desktop/) (Pastikan dalam keadaan aktif/running).
+
+## ⚙️ Cara Menjalankan Server
+Buka terminal di dalam folder `campss-backend`, lalu jalankan perintah berikut:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# 1. Menyalakan Server & Database
+./vendor/bin/sail up -d
+
+# 2. Menjalankan Migrasi & Mengisi Data Dummy (Seeder)
+./vendor/bin/sail artisan migrate:fresh --seed
 ```
+*Server API akan berjalan di **`http://localhost:8080/api`**.*
+*Database (phpMyAdmin) dapat diakses di **`http://localhost:8081`**.*
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🔐 Akun Default (Mock Data)
+Saat Anda menjalankan `--seed`, database akan otomatis terisi oleh 3 akun ini (Password semuanya adalah `password123`):
+- **Admin**: `admin@campss.com` (Role: admin)
+- **Petugas**: `petugas@campss.com` (Role: petugas)
+- **User Biasa**: `user@campss.com` (Role: user)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 📡 Daftar API Endpoint
 
-To learn more about Next.js, take a look at the following resources:
+### 1. Data Publik (Tanpa Login)
+| Method | Endpoint | Keterangan |
+|--------|----------|------------|
+| `GET`  | `/api/jalur` | Mengambil daftar jalur pendakian. |
+| `GET`  | `/api/vegetasi` | Mengambil data flora & fauna. |
+| `GET`  | `/api/cek-kuota` | Mengecek sisa kuota (`?tanggal=Y-m-d&jalur_id=X`). |
+| `POST` | `/api/pemesanan` | Mendaftar/membuat pesanan baru (Booking). |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 2. Autentikasi (Sanctum)
+| Method | Endpoint | Keterangan |
+|--------|----------|------------|
+| `POST` | `/api/login` | Login user, mengembalikan `access_token`. |
+| `POST` | `/api/register` | Mendaftar akun baru. |
+| `POST` | `/api/logout` | Logout (Wajib Header Authorization). |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 3. API Terlindungi (Khusus Admin/Petugas)
+*Wajib menyertakan Header: `Authorization: Bearer <access_token>`*
+| Method | Endpoint | Keterangan |
+|--------|----------|------------|
+| `POST` | `/api/admin/verifikasi/{id}` | Mengubah status pembayaran (diverifikasi/ditolak). |
+| `POST` | `/api/admin/kuota` | Membuka/Menutup kuota pada tanggal tertentu. |
+| `POST` | `/api/monitoring/checkin/{qr}`| Mencatat waktu masuk pendaki (Check-in). |
+| `POST` | `/api/monitoring/checkout/{qr}`| Mencatat waktu turun pendaki (Check-out). |
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🧪 Testing API
+Saya telah menyediakan file **`campss-postman-collection.json`** di dalam folder ini. 
+Anda dapat melakukan **Import** file tersebut ke aplikasi **Postman** Anda untuk langsung mendapatkan seluruh pengaturan API di atas secara otomatis!
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## 🔗 Panduan Koneksi ke Frontend (Next.js)
+1. Buat file `.env.local` di folder Frontend Anda.
+2. Tambahkan: `NEXT_PUBLIC_API_URL=http://localhost:8080/api`
+3. Gunakan URL tersebut pada setiap fungsi `fetch()` Anda. (Pastikan selalu mengirimkan header `Accept: application/json`).

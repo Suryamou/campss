@@ -1,32 +1,40 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { readMockRepository, updateBookingStatus } from "@/lib/campss";
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
-type Payment = {
-  id: string;
-  name: string;
-  date: string;
-  hikers: number;
-  total: number;
-  method: string;
-  status: "Menunggu" | "Diverifikasi" | "Ditolak";
-};
+type Payment = any;
 
 export default function VerifikasiPembayaranPage() {
+  const router = useRouter();
   const [payments, setPayments] = useState<Payment[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    queueMicrotask(() => setPayments(readMockRepository().bookings.map((booking) => ({
-      id: booking.bookingId,
-      name: booking.leader.name,
-      date: booking.dateLabel,
-      hikers: booking.participantCount,
-      total: booking.total,
-      method: booking.paymentProofName || "Belum dipilih",
-      status: booking.status === "VERIFIED" || booking.status === "ACTIVE" || booking.status === "CHECKED_IN" || booking.status === "COMPLETED" ? "Diverifikasi" : booking.status === "REJECTED" ? "Ditolak" : "Menunggu",
-    }))));
+    fetchPayments();
   }, []);
+
+  async function fetchPayments() {
+    try {
+      const token = localStorage.getItem("campss_admin_token");
+      if (!token) {
+        router.push("/admin/login");
+        return;
+      }
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/pembayaran`, {
+        headers: { Authorization: `Bearer ${token}`, Accept: "application/json" }
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setPayments(data.data || []);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const [selectedPayment, setSelectedPayment] =
     useState<Payment | null>(null);
@@ -35,36 +43,48 @@ export default function VerifikasiPembayaranPage() {
 
   const [rejectReason, setRejectReason] = useState("");
 
-  function verifyPayment(id: string) {
-    updateBookingStatus(id, "VERIFIED");
-    setPayments((current) =>
-      current.map((payment) =>
-        payment.id === id
-          ? { ...payment, status: "Diverifikasi" }
-          : payment
-      )
-    );
-
-    setSelectedPayment(null);
+  async function verifyPayment(id: string) {
+    try {
+      const token = localStorage.getItem("campss_admin_token");
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/verifikasi/${id}`, {
+        method: "POST",
+        headers: { 
+          Authorization: `Bearer ${token}`, 
+          "Content-Type": "application/json",
+          Accept: "application/json" 
+        },
+        body: JSON.stringify({ status: "diverifikasi" })
+      });
+      fetchPayments();
+      setSelectedPayment(null);
+    } catch (e) {
+      console.error(e);
+    }
   }
 
-  function rejectPayment(id: string) {
-    updateBookingStatus(id, "REJECTED");
-    setPayments((current) =>
-      current.map((payment) =>
-        payment.id === id
-          ? { ...payment, status: "Ditolak" }
-          : payment
-      )
-    );
-
-    setShowRejectModal(false);
-    setSelectedPayment(null);
-    setRejectReason("");
+  async function rejectPayment(id: string) {
+    try {
+      const token = localStorage.getItem("campss_admin_token");
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/verifikasi/${id}`, {
+        method: "POST",
+        headers: { 
+          Authorization: `Bearer ${token}`, 
+          "Content-Type": "application/json",
+          Accept: "application/json" 
+        },
+        body: JSON.stringify({ status: "ditolak", catatan: rejectReason })
+      });
+      fetchPayments();
+      setShowRejectModal(false);
+      setSelectedPayment(null);
+      setRejectReason("");
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   const waitingPayments = payments.filter(
-    (payment) => payment.status === "Menunggu"
+    (payment) => payment.status_pembayaran === "menunggu"
   );
 
   return (
@@ -141,7 +161,7 @@ export default function VerifikasiPembayaranPage() {
                   {
                     payments.filter(
                       (payment) =>
-                        payment.status === "Diverifikasi"
+                        payment.status_pembayaran === "diverifikasi"
                     ).length
                   }
                 </p>
@@ -156,7 +176,7 @@ export default function VerifikasiPembayaranPage() {
                   {
                     payments.filter(
                       (payment) =>
-                        payment.status === "Ditolak"
+                        payment.status_pembayaran === "ditolak"
                     ).length
                   }
                 </p>
@@ -232,39 +252,39 @@ export default function VerifikasiPembayaranPage() {
                           </p>
 
                           <p className="mt-1 text-xs text-gray-400">
-                            {payment.name}
+                            {payment.user?.name || "Pendaki CAMPSS"}
                           </p>
 
                         </td>
 
                         <td className="px-6 py-5 text-gray-600">
-                          {payment.date}
+                          {payment.tanggal_pendakian}
                         </td>
 
                         <td className="px-6 py-5 text-gray-600">
-                          {payment.hikers} orang
+                          {payment.jumlah_anggota} orang
                         </td>
 
                         <td className="px-6 py-5 font-semibold text-[#063d2b]">
                           Rp{" "}
-                          {payment.total.toLocaleString("id-ID")}
+                          {Number(payment.total_harga || 0).toLocaleString("id-ID")}
                         </td>
 
                         <td className="px-6 py-5">
 
-                          {payment.status === "Menunggu" && (
+                          {payment.status_pembayaran === "menunggu" && (
                             <span className="rounded-full bg-amber-100 px-3 py-1.5 text-xs font-semibold text-amber-700">
                               Menunggu
                             </span>
                           )}
 
-                          {payment.status === "Diverifikasi" && (
+                          {payment.status_pembayaran === "diverifikasi" && (
                             <span className="rounded-full bg-emerald-100 px-3 py-1.5 text-xs font-semibold text-emerald-700">
                               Diverifikasi
                             </span>
                           )}
 
-                          {payment.status === "Ditolak" && (
+                          {payment.status_pembayaran === "ditolak" && (
                             <span className="rounded-full bg-red-100 px-3 py-1.5 text-xs font-semibold text-red-700">
                               Ditolak
                             </span>
@@ -371,7 +391,7 @@ export default function VerifikasiPembayaranPage() {
                   </span>
 
                   <span className="font-medium text-[#063d2b]">
-                    {selectedPayment.name}
+                    {selectedPayment.user?.name || "Pendaki CAMPSS"}
                   </span>
 
                 </div>
@@ -383,7 +403,7 @@ export default function VerifikasiPembayaranPage() {
                   </span>
 
                   <span className="font-medium text-[#063d2b]">
-                    {selectedPayment.date}
+                    {selectedPayment.tanggal_pendakian}
                   </span>
 
                 </div>
@@ -395,7 +415,7 @@ export default function VerifikasiPembayaranPage() {
                   </span>
 
                   <span className="font-medium text-[#063d2b]">
-                    {selectedPayment.hikers} orang
+                    {selectedPayment.jumlah_anggota} orang
                   </span>
 
                 </div>
@@ -407,7 +427,7 @@ export default function VerifikasiPembayaranPage() {
                   </span>
 
                   <span className="font-medium text-[#063d2b]">
-                    {selectedPayment.method}
+                    {selectedPayment.pembayaran?.metode_pembayaran || "Transfer Bank"}
                   </span>
 
                 </div>
@@ -420,7 +440,7 @@ export default function VerifikasiPembayaranPage() {
 
                   <span className="font-bold text-[#063d2b]">
                     Rp{" "}
-                    {selectedPayment.total.toLocaleString("id-ID")}
+                    {Number(selectedPayment.total_harga || 0).toLocaleString("id-ID")}
                   </span>
 
                 </div>
@@ -428,7 +448,7 @@ export default function VerifikasiPembayaranPage() {
               </div>
 
               {/* Actions */}
-              {selectedPayment.status === "Menunggu" && (
+              {selectedPayment.status_pembayaran === "menunggu" && (
 
                 <div className="mt-7 grid grid-cols-2 gap-3">
 
