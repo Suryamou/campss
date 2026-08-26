@@ -53,6 +53,13 @@ function BookingForm() {
   const totalPembayaran = jumlahPendaki * PRICE_PER_PERSON;
 
   useEffect(() => {
+    const loggedIn = localStorage.getItem("campss_logged_in") === "true" || sessionStorage.getItem("campss_logged_in") === "true";
+    if (!loggedIn) {
+      alert("Harap login atau daftar akun terlebih dahulu untuk melakukan pemesanan tiket.");
+      router.push("/login");
+      return;
+    }
+
     queueMicrotask(() => {
       const user = readUser();
       if (user) {
@@ -64,7 +71,7 @@ function BookingForm() {
         }));
       }
     });
-  }, []);
+  }, [router]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
