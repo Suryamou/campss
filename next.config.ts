@@ -5,17 +5,21 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/api_proxy/:path*',
-        destination: `${process.env.BACKEND_URL || 'http://localhost:8080/api'}/:path*`,
+        destination: `${process.env.BACKEND_URL || 'http://157.10.252.30/api'}/:path*`,
       },
       {
         source: '/storage_proxy/:path*',
-        destination: `${(process.env.BACKEND_URL || 'http://localhost:8080/api').replace('/api', '')}/storage/:path*`,
+        destination: `${(process.env.BACKEND_URL || 'http://157.10.252.30/api').replace('/api', '')}/storage/:path*`,
       },
     ];
   },
   images: {
     dangerouslyAllowLocalIP: true,
     remotePatterns: [
+      {
+        protocol: "http",
+        hostname: "157.10.252.30",
+      },
       {
         protocol: "http",
         hostname: "127.0.0.1",
