@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { QRCodeSVG } from "qrcode.react";
+import AdminModal, { AdminModalType } from "@/components/AdminModal";
 
 type Vegetation = {
   id: number;
@@ -64,6 +65,27 @@ export default function KelolaVegetasiPage() {
   });
   const [formError, setFormError] = useState("");
 
+  const [modalState, setModalState] = useState<{
+    isOpen: boolean;
+    type: AdminModalType;
+    title: string;
+    message: string;
+    onConfirm?: () => void;
+  }>({
+    isOpen: false,
+    type: "alert",
+    title: "",
+    message: "",
+  });
+
+  const showAlert = (title: string, message: string) => {
+    setModalState({ isOpen: true, type: "alert", title, message });
+  };
+
+  const showSuccess = (title: string, message: string) => {
+    setModalState({ isOpen: true, type: "success", title, message });
+  };
+
   const filteredVegetation = vegetations.filter((item) => {
     const keyword = search.toLowerCase();
 
@@ -114,18 +136,26 @@ export default function KelolaVegetasiPage() {
         });
         setShowForm(false);
         fetchVegetasi(); // Reload data
+        showSuccess("Berhasil", "Data vegetasi berhasil disimpan.");
       } else {
-        alert("Gagal menyimpan data vegetasi");
+        showAlert("Gagal", "Gagal menyimpan data vegetasi");
       }
     } catch (err) {
-      alert("Gagal terhubung ke server");
+      showAlert("Error", "Gagal terhubung ke server");
     }
   }
 
-  async function deleteVegetation(id: number) {
-    const confirmed = window.confirm("Yakin ingin menghapus data vegetasi ini?");
-    if (!confirmed) return;
+  function confirmDeleteVegetation(id: number) {
+    setModalState({
+      isOpen: true,
+      type: "confirm",
+      title: "Hapus Data Vegetasi",
+      message: "Apakah Anda yakin ingin menghapus data vegetasi ini? Tindakan ini tidak dapat dibatalkan.",
+      onConfirm: () => executeDeleteVegetation(id),
+    });
+  }
 
+  async function executeDeleteVegetation(id: number) {
     try {
       const token = localStorage.getItem("campss_admin_token") || sessionStorage.getItem("campss_admin_token");
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/vegetasi/${id}`, {
@@ -136,11 +166,12 @@ export default function KelolaVegetasiPage() {
       if (res.ok) {
         setVegetations((current) => current.filter((item) => item.id !== id));
         setSelected(null);
+        showSuccess("Terhapus", "Data vegetasi berhasil dihapus.");
       } else {
-        alert("Gagal menghapus data");
+        showAlert("Gagal", "Gagal menghapus data vegetasi.");
       }
     } catch (err) {
-      alert("Gagal terhubung ke server");
+      showAlert("Error", "Gagal terhubung ke server.");
     }
   }
 
@@ -592,7 +623,7 @@ export default function KelolaVegetasiPage() {
 
                 <button
                   onClick={() =>
-                    deleteVegetation(selected.id)
+                    confirmDeleteVegetation(selected.id)
                   }
                   className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-xs font-bold text-red-600 hover:bg-red-100"
                 >
@@ -609,6 +640,15 @@ export default function KelolaVegetasiPage() {
 
       )}
 
+      {/* ADMIN MODAL */}
+      <AdminModal
+        isOpen={modalState.isOpen}
+        type={modalState.type}
+        title={modalState.title}
+        message={modalState.message}
+        onConfirm={modalState.onConfirm}
+        onClose={() => setModalState((prev) => ({ ...prev, isOpen: false }))}
+      />
     </div>
   );
 }

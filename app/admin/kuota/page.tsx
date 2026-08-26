@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import AdminModal from "@/components/AdminModal";
 
 type QuotaStatus = "buka" | "tutup";
 
@@ -20,6 +21,7 @@ export default function KelolaKuotaPage() {
   const [newQuota, setNewQuota] = useState("");
   const [selectedQuota, setSelectedQuota] = useState<Quota | null>(null);
   const [message, setMessage] = useState("");
+  const [deleteId, setDeleteId] = useState<number | null>(null);
 
   useEffect(() => {
     fetchQuotas();
@@ -171,14 +173,16 @@ export default function KelolaKuotaPage() {
     }
   }
 
-  async function handleDeleteQuota(id: number) {
-    if (!confirm("Apakah Anda yakin ingin menghapus kuota untuk tanggal ini?")) {
-      return;
-    }
+  function confirmDeleteQuota(id: number) {
+    setDeleteId(id);
+  }
+
+  async function handleDeleteQuota() {
+    if (!deleteId) return;
 
     try {
       const token = localStorage.getItem("campss_admin_token");
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/kuota/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/kuota/${deleteId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -195,6 +199,8 @@ export default function KelolaKuotaPage() {
       }
     } catch (e) {
       console.error(e);
+    } finally {
+      setDeleteId(null);
     }
   }
 
@@ -373,7 +379,7 @@ export default function KelolaKuotaPage() {
                       Ubah Kuota
                     </button>
                     <button
-                      onClick={() => handleDeleteQuota(item.id)}
+                      onClick={() => confirmDeleteQuota(item.id)}
                       className="rounded-xl border border-red-200 px-4 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 transition"
                     >
                       Hapus
@@ -410,6 +416,16 @@ export default function KelolaKuotaPage() {
           onSave={handleUpdateQuota}
         />
       )}
+
+      {/* CONFIRM DELETE MODAL */}
+      <AdminModal
+        isOpen={deleteId !== null}
+        type="confirm"
+        title="Hapus Kuota"
+        message="Apakah Anda yakin ingin menghapus kuota untuk tanggal ini? Tindakan ini tidak dapat dibatalkan."
+        onConfirm={handleDeleteQuota}
+        onClose={() => setDeleteId(null)}
+      />
     </div>
   );
 }

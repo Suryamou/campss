@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { Html5Qrcode } from "html5-qrcode";
 import { readMockRepository, updateBookingStatus } from "@/lib/campss";
+import AdminModal from "@/components/AdminModal";
 
 type TicketStatus =
   | "BELUM_CHECK_IN"
@@ -24,6 +25,15 @@ export default function PemindaiPage() {
   const [scannerRunning, setScannerRunning] = useState(false);
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [message, setMessage] = useState("");
+  const [modalState, setModalState] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+  });
+
+  const showAlert = (title: string, msg: string) => {
+    setModalState({ isOpen: true, title, message: msg });
+  };
 
 
   useEffect(() => {
@@ -143,7 +153,7 @@ export default function PemindaiPage() {
 
       setMessage("Check-in berhasil. Pendaki sekarang berstatus sedang mendaki.");
     } catch (err: any) {
-      alert("Gagal Check-in: " + err.message);
+      showAlert("Gagal Check-in", err.message);
     }
   }
 
@@ -168,7 +178,7 @@ export default function PemindaiPage() {
 
       setMessage("Check-out berhasil. Pendaki telah selesai mendaki.");
     } catch (err: any) {
-      alert("Gagal Check-out: " + err.message);
+      showAlert("Gagal Check-out", err.message);
     }
   }
 
@@ -579,6 +589,13 @@ export default function PemindaiPage() {
 
       </div>
 
+      <AdminModal
+        isOpen={modalState.isOpen}
+        type="alert"
+        title={modalState.title}
+        message={modalState.message}
+        onClose={() => setModalState({ ...modalState, isOpen: false })}
+      />
     </div>
   );
 }

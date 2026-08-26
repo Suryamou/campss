@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import AdminModal from "@/components/AdminModal";
 
 type HikerStatus = "BELUM_CHECK_IN" | "SEDANG_MENDAKI" | "SELESAI_MENDAKI";
 
@@ -11,6 +12,15 @@ export default function PemantauanPage() {
   
   const [hikers, setHikers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [modalState, setModalState] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+  });
+
+  const showAlert = (title: string, message: string) => {
+    setModalState({ isOpen: true, title, message });
+  };
 
   useEffect(() => {
     fetchPemantauan();
@@ -45,10 +55,10 @@ export default function PemantauanPage() {
         setSelectedHiker(null);
         fetchPemantauan();
       } else {
-        alert("Gagal Check-In");
+        showAlert("Gagal", "Terjadi kesalahan saat Check-In.");
       }
     } catch (err) {
-      console.error(err);
+      showAlert("Error", "Gagal terhubung ke server.");
     }
   };
 
@@ -63,10 +73,10 @@ export default function PemantauanPage() {
         setSelectedHiker(null);
         fetchPemantauan();
       } else {
-        alert("Gagal Check-Out");
+        showAlert("Gagal", "Terjadi kesalahan saat Check-Out.");
       }
     } catch (err) {
-      console.error(err);
+      showAlert("Error", "Gagal terhubung ke server.");
     }
   };
 
@@ -222,6 +232,14 @@ export default function PemantauanPage() {
           </div>
         </div>
       )}
+
+      <AdminModal
+        isOpen={modalState.isOpen}
+        type="alert"
+        title={modalState.title}
+        message={modalState.message}
+        onClose={() => setModalState({ ...modalState, isOpen: false })}
+      />
     </div>
   );
 }

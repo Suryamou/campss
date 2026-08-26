@@ -52,11 +52,12 @@ function BookingForm() {
 
   const totalPembayaran = jumlahPendaki * PRICE_PER_PERSON;
 
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
   useEffect(() => {
     const loggedIn = localStorage.getItem("campss_logged_in") === "true" || sessionStorage.getItem("campss_logged_in") === "true";
     if (!loggedIn) {
-      alert("Harap login atau daftar akun terlebih dahulu untuk melakukan pemesanan tiket.");
-      router.push("/login");
+      setShowAuthModal(true);
       return;
     }
 
@@ -349,6 +350,46 @@ function BookingForm() {
           </aside>
         </div>
       </section>
+
+      {/* AUTH MODAL */}
+      {showAuthModal && (
+        <>
+          <style>{`
+            @keyframes popUp {
+              0% { opacity: 0; transform: scale(0.95) translateY(10px); }
+              100% { opacity: 1; transform: scale(1) translateY(0); }
+            }
+            .animate-popup {
+              animation: popUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            }
+          `}</style>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#063d2b]/40 px-6 backdrop-blur-sm">
+            <div className="w-full max-w-sm rounded-2xl bg-white p-8 text-center shadow-2xl animate-popup">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#e9f7f1] text-3xl shadow-inner">
+                🏕️
+              </div>
+              <h3 className="mt-6 text-xl font-bold text-[#063d2b]">Akses Dibatasi</h3>
+              <p className="mt-3 text-sm leading-6 text-gray-500">
+                Harap masuk (login) ke akunmu atau daftar terlebih dahulu untuk melanjutkan pemesanan tiket.
+              </p>
+              <div className="mt-8 flex flex-col gap-3">
+                <Link
+                  href="/login"
+                  className="w-full rounded-xl bg-[#063d2b] px-5 py-3.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#052f22] hover:shadow"
+                >
+                  Masuk Sekarang
+                </Link>
+                <Link
+                  href="/cek-kuota"
+                  className="w-full rounded-xl border border-gray-200 px-5 py-3.5 text-sm font-semibold text-gray-600 transition hover:bg-gray-50"
+                >
+                  Kembali ke Cek Kuota
+                </Link>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </main>
   );
 }
