@@ -5,11 +5,11 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/api_proxy/:path*',
-        destination: `${process.env.BACKEND_URL}/:path*`,
+        destination: `${process.env.BACKEND_URL || 'http://localhost:8080/api'}/:path*`,
       },
       {
         source: '/storage_proxy/:path*',
-        destination: `${process.env.BACKEND_URL?.replace('/api', '')}/storage/:path*`,
+        destination: `${(process.env.BACKEND_URL || 'http://localhost:8080/api').replace('/api', '')}/storage/:path*`,
       },
     ];
   },
