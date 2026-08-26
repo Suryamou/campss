@@ -1,6 +1,18 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  async rewrites() {
+    return [
+      {
+        source: '/api_proxy/:path*',
+        destination: `${process.env.BACKEND_URL}/:path*`,
+      },
+      {
+        source: '/storage_proxy/:path*',
+        destination: `${process.env.BACKEND_URL?.replace('/api', '')}/storage/:path*`,
+      },
+    ];
+  },
   images: {
     dangerouslyAllowLocalIP: true,
     remotePatterns: [
@@ -11,6 +23,10 @@ const nextConfig: NextConfig = {
       {
         protocol: "http",
         hostname: "localhost",
+      },
+      {
+        protocol: "http",
+        hostname: "10.129.61.3",
       },
       {
         protocol: "https",

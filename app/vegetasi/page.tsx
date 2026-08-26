@@ -29,7 +29,7 @@ export default function VegetasiPage() {
               nama: item.nama,
               namaLatin: item.nama_latin || item.namaLatin || "-",
               kategori: item.kategori || "Flora Gunung Prau",
-              foto: item.foto ? (item.foto.startsWith('http') ? item.foto : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}/storage/${item.foto}`) : "/images/placeholder.jpg",
+              foto: item.foto ? (item.foto.startsWith('http') ? item.foto : `/storage_proxy/${item.foto}`) : "/images/placeholder.jpg",
               deskripsi: item.deskripsi || "Tidak ada deskripsi tersedia.",
               peran: item.peran || "Menjaga keseimbangan ekosistem pegunungan.",
               lokasi: item.lokasi || "Jalur pendakian Gunung Prau",
