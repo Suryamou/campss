@@ -245,6 +245,26 @@ export default function AdminLayout({
 
             </div>
 
+            <nav className="mt-2 flex gap-2 overflow-x-auto rounded-2xl border border-[#dfe9e4] bg-white/90 p-2 lg:hidden" aria-label="Navigasi admin">
+              {menus.flatMap((section) => section.items).map((item) => {
+                const active = pathname === item.href;
+
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`shrink-0 rounded-xl px-3 py-2 text-xs font-semibold transition ${
+                      active
+                        ? "bg-[#073d2b] text-white"
+                        : "bg-[#f4faf7] text-[#17634a] hover:bg-[#e9f7f1]"
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </nav>
+
           </header>
 
           {/* PAGE */}

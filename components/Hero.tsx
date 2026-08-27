@@ -18,7 +18,7 @@ export default function Hero() {
       <div className="relative mx-auto flex min-h-[560px] max-w-7xl items-center justify-center px-6 text-center">
         <div className="max-w-3xl text-white">
 
-          <h1 className="text-4xl font-bold leading-tight md:text-6xl">
+          <h1 className="text-3xl font-bold leading-tight sm:text-4xl md:text-6xl">
             Jelajahi Gunung Prau via
             <br />
             Campurejo
@@ -29,17 +29,17 @@ export default function Hero() {
             kenali jalur, dan jelajahi wisata Campurejo.
           </p>
 
-          <div className="mt-8 flex justify-center gap-3">
+          <div className="mt-8 flex w-full flex-col justify-center gap-3 sm:w-auto sm:flex-row">
             <Link
               href="/cek-kuota"
-              className="rounded-md bg-[#063d2b] px-6 py-3 text-sm font-semibold text-white hover:bg-[#052f22]"
+              className="w-full rounded-md bg-[#063d2b] px-6 py-3 text-sm font-semibold text-white hover:bg-[#052f22] sm:w-auto"
             >
               Pesan Tiket Pendakian
             </Link>
 
             <Link
               href="/panduan"
-              className="rounded-md border border-white/40 bg-white/10 px-6 py-3 text-sm font-semibold text-white backdrop-blur-sm hover:bg-white/20"
+              className="w-full rounded-md border border-white/40 bg-white/10 px-6 py-3 text-sm font-semibold text-white backdrop-blur-sm hover:bg-white/20 sm:w-auto"
             >
               Jelajahi Pendakian
             </Link>

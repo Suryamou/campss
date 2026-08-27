@@ -154,7 +154,7 @@ function PembayaranContent() {
                     </div>
                     <div className="my-4 flex justify-center">
                       <div className="relative rounded-xl border border-[#dcece5] bg-white p-3 shadow-sm">
-                        <img src="/images/qris.jpeg" alt="QRIS Basecamp Campurejo" className="h-90 w-90 object-contain" />
+                        <img src="/images/qris.jpeg" alt="QRIS Basecamp Campurejo" className="h-64 w-64 max-w-full object-contain sm:h-72 sm:w-72" />
                         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
                           <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-[#063d2b] text-xs font-bold text-white shadow-md">C</div>
                         </div>

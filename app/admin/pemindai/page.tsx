@@ -284,7 +284,7 @@ export default function PemindaiPage() {
 
             <div
               id="qr-reader"
-              className="min-h-[380px] w-full"
+              className="min-h-[280px] w-full sm:min-h-[380px]"
             />
 
           </div>
