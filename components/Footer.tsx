@@ -7,7 +7,7 @@ import { ArrowUpRight, ClipboardList } from "lucide-react";
 export default function Footer() {
   const pathname = usePathname();
 
-  if (pathname === "/admin" || pathname.startsWith("/admin/")) {
+  if (pathname === "/portal-admin" || pathname.startsWith("/portal-admin/")) {
     return null;
   }
 

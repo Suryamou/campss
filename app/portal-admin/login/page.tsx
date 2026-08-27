@@ -39,7 +39,7 @@ export default function AdminLoginPage() {
       localStorage.setItem("campss_admin_token", data.access_token);
       localStorage.setItem("campss_admin_user", JSON.stringify(data.user));
       
-      router.push("/admin/verifikasi");
+      router.push("/portal-admin/verifikasi");
     } catch (err: any) {
       setError(err.message);
     } finally {

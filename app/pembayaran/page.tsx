@@ -143,10 +143,7 @@ function PembayaranContent() {
                   <p className="mt-1 text-sm text-gray-500">Gunakan salah satu rekening pembayaran resmi Basecamp Campurejo.</p>
                   
                   {/* QRIS */}
-                  <div 
-                    className={`mt-6 cursor-pointer rounded-xl border-2 ${metode === 'QRIS' ? 'border-[#17634a] bg-[#f2f8f5]' : 'border-transparent bg-[#f8fcfa]'} p-5 text-center transition`}
-                    onClick={() => setMetode('QRIS')}
-                  >
+                  <div className="mt-6 rounded-xl border-2 border-[#17634a] bg-[#f2f8f5] p-5 text-center">
                     <div className="flex items-center justify-between border-b border-[#dcece5] pb-3">
                       <div className="text-lg font-black tracking-tight text-[#063d2b]">
                         QRIS <span className="text-xs font-normal text-gray-500">National QR</span>
@@ -160,40 +157,11 @@ function PembayaranContent() {
                         </div>
                       </div>
                     </div>
-                    <a href="/images/qris.jpeg" download="qris-basecamp-campurejo.jpeg" className=" inline-flex items-center rounded-lg bg-[#17634a] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#0f503b]" onClick={(e) => e.stopPropagation()}>
+                    <a href="/images/qris.jpeg" download="qris-basecamp-campurejo.jpeg" className=" inline-flex items-center rounded-lg bg-[#17634a] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#0f503b]">
                       Download QRIS
                     </a>
                     <p className="mt-3 text-xs font-bold uppercase text-[#063d2b]">Nama QRIS: Basecamp Prau via Campurejo</p>
                     <p className="mt-1 text-[11px] text-gray-500">Scan dengan GoPay, OVO, DANA, ShopeePay, BCA, Mandiri, BRI, dll.</p>
-                  </div>
-
-                  {/* DANA */}
-                  <div 
-                    className={`mt-4 cursor-pointer rounded-xl border ${metode === 'DANA' ? 'border-[#17634a] bg-[#e9f7f1]' : 'border-[#dcece5] bg-[#f8fcfa]'} p-5 transition`}
-                    onClick={() => setMetode('DANA')}
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <p className="text-xs text-gray-500">DANA</p>
-                        <p className="mt-1 text-lg font-bold text-[#063d2b]">085842303879</p>
-                        <p className="mt-1 text-sm text-gray-500">Sabar Alim</p>
-                      </div>
-                      <span className="rounded-full bg-red-100 px-2.5 py-0.5 text-[10px] font-bold text-red-600">GPN</span>
-                    </div>
-                  </div>
-
-                  {/* BRI */}
-                  <div 
-                    className={`mt-4 cursor-pointer rounded-xl border ${metode === 'BRI' ? 'border-[#17634a] bg-[#e9f7f1]' : 'border-[#dcece5] bg-[#f8fcfa]'} p-5 transition`}
-                    onClick={() => setMetode('BRI')}
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <p className="text-xs text-gray-500">Bank BRI</p>
-                        <p className="mt-1 text-lg font-bold text-[#063d2b]">680701005107506</p>
-                        <p className="mt-1 text-sm text-gray-500">Wahyu Ristianto</p>
-                      </div>
-                    </div>
                   </div>
 
                 </div>

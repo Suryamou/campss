@@ -20,7 +20,7 @@ export default function AdminDashboardPage() {
     async function fetchSummary() {
       const token = localStorage.getItem("campss_admin_token");
       if (!token) {
-        router.push("/admin/login");
+        router.push("/portal-admin/login");
         return;
       }
       try {
@@ -125,7 +125,7 @@ export default function AdminDashboardPage() {
                 </p>
               </div>
               <Link
-                href="/admin/kuota"
+                href="/portal-admin/kuota"
                 className="text-xs font-bold text-[#17634a] hover:underline"
               >
                 Kelola Kuota →
@@ -192,7 +192,7 @@ export default function AdminDashboardPage() {
                 </p>
               </div>
               <Link
-                href="/admin/pemantauan"
+                href="/portal-admin/pemantauan"
                 className="text-xs font-bold text-[#17634a] hover:underline"
               >
                 Lihat Semua →
@@ -235,20 +235,20 @@ export default function AdminDashboardPage() {
             </p>
             <div className="mt-5 space-y-3">
               <QuickAction
-                href="/admin/pemindai"
+                href="/portal-admin/pemindai"
                 icon="⌗"
                 title="Scan E-Tiket"
                 description="Check-in / check-out pendaki"
               />
               <QuickAction
-                href="/admin/verifikasi"
+                href="/portal-admin/verifikasi"
                 icon="◇"
                 title="Verifikasi Pembayaran"
                 description={`${data.menungguVerifikasi} pembayaran menunggu`}
                 badge={data.menungguVerifikasi > 0 ? data.menungguVerifikasi.toString() : undefined}
               />
               <QuickAction
-                href="/admin/kuota"
+                href="/portal-admin/kuota"
                 icon="▤"
                 title="Kelola Kuota"
                 description="Atur kuota berdasarkan tanggal"
@@ -270,7 +270,7 @@ export default function AdminDashboardPage() {
               melakukan check-out setelah kembali.
             </p>
             <Link
-              href="/admin/pemantauan"
+              href="/portal-admin/pemantauan"
               className="mt-5 inline-block text-xs font-bold text-emerald-200 hover:text-white"
             >
               Buka Pemantauan →

@@ -19,7 +19,7 @@ export default function VerifikasiPembayaranPage() {
     try {
       const token = localStorage.getItem("campss_admin_token");
       if (!token) {
-        router.push("/admin/login");
+        router.push("/portal-admin/login");
         return;
       }
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/pembayaran`, {

@@ -1,6 +1,40 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export default function Hero() {
+  const [status, setStatus] = useState("TIDAK DIKETAHUI");
+  const [kuotaText, setKuotaText] = useState("- / -");
+  const [isTerbuka, setIsTerbuka] = useState(false);
+
+  useEffect(() => {
+    async function fetchKuota() {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/kuota`, {
+          cache: "no-store",
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.data && data.data.length > 0) {
+            const today = data.data[0];
+            const terpakai = today.terpakai || 0;
+            const maksimal = today.kuota_maksimal || 0;
+            const sisa = Math.max(0, maksimal - terpakai);
+            
+            const terbuka = today.status === "buka" && sisa > 0;
+            setIsTerbuka(terbuka);
+            setStatus(terbuka ? "TERBUKA" : "DITUTUP");
+            setKuotaText(`${sisa} / ${maksimal}`);
+          }
+        }
+      } catch (err) {
+        console.error("Gagal mengambil kuota di hero:", err);
+      }
+    }
+    fetchKuota();
+  }, []);
+
   return (
     <section className="relative overflow-hidden">
       {/* Background */}
@@ -54,25 +88,25 @@ export default function Hero() {
 
           <div className="p-5">
             <p className="text-xs text-gray-500">
-              Status Pendakian
+              Status Pendakian (Hari Ini)
             </p>
 
             <div className="mt-2 flex items-center gap-2">
-              <span className="h-2.5 w-2.5 rounded-full bg-emerald-600" />
+              <span className={`h-2.5 w-2.5 rounded-full ${isTerbuka ? 'bg-emerald-600' : 'bg-red-600'}`} />
 
-              <span className="font-semibold text-[#063d2b]">
-                TERBUKA
+              <span className={`font-semibold ${isTerbuka ? 'text-[#063d2b]' : 'text-red-700'}`}>
+                {status}
               </span>
             </div>
           </div>
 
           <div className="border-t p-5 md:border-l md:border-t-0">
             <p className="text-xs text-gray-500">
-              Kuota Hari Ini
+              Sisa Kuota Hari Ini
             </p>
 
             <p className="mt-2 font-semibold text-[#063d2b]">
-              80 / 100
+              {kuotaText}
             </p>
           </div>
 

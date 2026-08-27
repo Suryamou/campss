@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const menus = [
   {
@@ -9,23 +10,23 @@ const menus = [
     items: [
       {
         label: "Dashboard",
-        href: "/admin",
+        href: "/portal-admin",
         icon: "▦",
       },
       {
         label: "Verifikasi Pembayaran",
-        href: "/admin/verifikasi",
+        href: "/portal-admin/verifikasi",
         icon: "▣",
         badge: 5,
       },
       {
         label: "Pemindai E-Tiket",
-        href: "/admin/pemindai",
+        href: "/portal-admin/pemindai",
         icon: "⌗",
       },
       {
         label: "Pemantauan Pendaki",
-        href: "/admin/pemantauan",
+        href: "/portal-admin/pemantauan",
         icon: "◉",
       },
     ],
@@ -35,12 +36,12 @@ const menus = [
     items: [
       {
         label: "Kelola Kuota",
-        href: "/admin/kuota",
+        href: "/portal-admin/kuota",
         icon: "▤",
       },
       {
         label: "Kelola Vegetasi",
-        href: "/admin/vegetasi",
+        href: "/portal-admin/vegetasi",
         icon: "♧",
       },
     ],
@@ -53,6 +54,36 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const [adminName, setAdminName] = useState("Admin Basecamp");
+  const [adminInitial, setAdminInitial] = useState("A");
+
+  const router = useRouter();
+
+  useEffect(() => {
+    // Jika halaman saat ini adalah halaman login, tidak perlu cek token
+    if (pathname === "/portal-admin/login") return;
+
+    const token = localStorage.getItem("campss_admin_token");
+    if (!token) {
+      router.push("/portal-admin/login");
+      return;
+    }
+
+    const userStr = localStorage.getItem("campss_admin_user");
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        if (user.name) {
+          setAdminName(user.name);
+          setAdminInitial(user.name.charAt(0).toUpperCase());
+        }
+      } catch (e) {}
+    }
+  }, [pathname, router]);
+
+  if (pathname === "/portal-admin/login") {
+    return <>{children}</>;
+  }
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_#f8fcfa_0%,_#f1f7f3_55%,_#ebf3ee_100%)]">
@@ -65,7 +96,7 @@ export default function AdminLayout({
           {/* BRAND */}
           <div className="border-b border-white/10 px-6 py-6">
 
-            <Link href="/admin" className="flex items-center gap-3">
+            <Link href="/portal-admin" className="flex items-center gap-3">
 
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/95 text-lg font-black text-[#073d2b] shadow-lg shadow-black/10">
                 C
@@ -101,7 +132,7 @@ export default function AdminLayout({
 
                     const active =
                       pathname === item.href ||
-                      (item.href !== "/admin" &&
+                      (item.href !== "/portal-admin" &&
                         pathname.startsWith(item.href));
 
                     return (
@@ -158,12 +189,12 @@ export default function AdminLayout({
             <div className="mb-3 flex items-center gap-3 rounded-2xl border border-white/10 bg-white/10 p-3 shadow-inner shadow-black/10">
 
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-sm font-bold text-[#073d2b]">
-                A
+                {adminInitial}
               </div>
 
               <div className="min-w-0">
                 <p className="truncate text-xs font-semibold">
-                  Admin Basecamp
+                  {adminName}
                 </p>
 
                 <p className="truncate text-[10px] text-emerald-100/70">
@@ -174,7 +205,11 @@ export default function AdminLayout({
             </div>
 
             <Link
-              href="/admin/login"
+              href="/portal-admin/login"
+              onClick={() => {
+                localStorage.removeItem("campss_admin_token");
+                localStorage.removeItem("campss_admin_user");
+              }}
               className="flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm text-emerald-50/90 transition hover:bg-white/10 hover:text-white"
             >
               <span>↪</span>
@@ -198,7 +233,7 @@ export default function AdminLayout({
                   Dashboard Utama
                 </p>
                 <p className="mt-1 text-sm font-semibold text-[#073d2b]">
-                  Selamat datang, Admin Basecamp
+                  Selamat datang, {adminName}
                 </p>
               </div>
 
@@ -227,7 +262,7 @@ export default function AdminLayout({
 
                   <div className="hidden text-right md:block">
                     <p className="text-xs font-bold text-[#073d2b]">
-                      Admin Basecamp
+                      {adminName}
                     </p>
 
                     <p className="text-[10px] text-gray-500">
@@ -236,7 +271,7 @@ export default function AdminLayout({
                   </div>
 
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#e7f3ed] text-sm font-bold text-[#17634a]">
-                    A
+                    {adminInitial}
                   </div>
 
                 </div>
