@@ -12,6 +12,7 @@ export default function PemantauanPage() {
   
   const [hikers, setHikers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [modalState, setModalState] = useState({
     isOpen: false,
     title: "",
@@ -24,6 +25,8 @@ export default function PemantauanPage() {
 
   useEffect(() => {
     fetchPemantauan();
+    const interval = setInterval(fetchPemantauan, 15000);
+    return () => clearInterval(interval);
   }, []);
 
   async function fetchPemantauan() {
@@ -36,6 +39,7 @@ export default function PemantauanPage() {
       if (res.ok) {
         const json = await res.json();
         setHikers(json.data);
+        setLastUpdated(new Date().toLocaleTimeString("id-ID"));
       }
     } catch (err) {
       console.error(err);
@@ -94,9 +98,25 @@ export default function PemantauanPage() {
 
   return (
     <div className="p-4 md:p-8">
-      <header className="mb-8">
-        <h1 className="text-2xl font-bold text-[#073d2b]">Pemantauan Pendaki</h1>
-        <p className="mt-1 text-sm text-gray-500">Monitor status pergerakan pendaki secara real-time.</p>
+      <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-[#073d2b]">Pemantauan Pendaki</h1>
+          <p className="mt-1 text-sm text-gray-500">Monitor status pergerakan pendaki secara real-time.</p>
+        </div>
+        <div className="flex items-center gap-2 self-start rounded-full border border-emerald-100 bg-emerald-50 px-4 py-2 sm:self-auto">
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+          </span>
+          <span className="text-xs font-semibold text-emerald-700">
+            Realtime
+          </span>
+          {lastUpdated && (
+            <span className="text-[10px] text-emerald-600">
+              · {lastUpdated}
+            </span>
+          )}
+        </div>
       </header>
 
       <div className="mb-8 grid gap-5 sm:grid-cols-3">
