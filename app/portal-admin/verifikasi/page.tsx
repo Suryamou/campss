@@ -424,27 +424,33 @@ export default function VerifikasiPembayaranPage() {
 
             <div className="p-6">
 
-              {/* Dummy bukti */}
-              <div className="flex h-64 items-center justify-center rounded-xl border-2 border-dashed border-[#cfe6dc] bg-[#f8fcfa]">
-
-                <div className="text-center">
-
-                  <div className="text-4xl">
-                    🧾
-                  </div>
-
-                  <p className="mt-3 text-sm font-semibold text-[#063d2b]">
-                    Bukti Pembayaran
-                  </p>
-
-                  <p className="mt-1 text-xs text-gray-400">
-                    Preview bukti pembayaran akan
-                    ditampilkan di sini.
-                  </p>
-
+              {/* Bukti Pembayaran */}
+              {selectedPayment.pembayaran?.bukti_pembayaran && selectedPayment.pembayaran.bukti_pembayaran !== 'unknown' ? (
+                <div className="flex h-64 items-center justify-center rounded-xl overflow-hidden border-2 border-[#cfe6dc] bg-[#f8fcfa]">
+                  <img
+                    src={selectedPayment.pembayaran.bukti_pembayaran.startsWith('http') 
+                      ? selectedPayment.pembayaran.bukti_pembayaran 
+                      : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}/storage/${selectedPayment.pembayaran.bukti_pembayaran}`}
+                    alt="Bukti Pembayaran"
+                    className="h-full w-full object-contain cursor-pointer transition-transform hover:scale-105"
+                    onClick={() => window.open(
+                      selectedPayment.pembayaran.bukti_pembayaran.startsWith('http') 
+                      ? selectedPayment.pembayaran.bukti_pembayaran 
+                      : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}/storage/${selectedPayment.pembayaran.bukti_pembayaran}`, 
+                      '_blank'
+                    )}
+                    title="Klik untuk memperbesar"
+                  />
                 </div>
-
-              </div>
+              ) : (
+                <div className="flex h-64 items-center justify-center rounded-xl border-2 border-dashed border-[#cfe6dc] bg-[#f8fcfa]">
+                  <div className="text-center">
+                    <div className="text-4xl">🧾</div>
+                    <p className="mt-3 text-sm font-semibold text-[#063d2b]">Belum Ada Bukti</p>
+                    <p className="mt-1 text-xs text-gray-400">User belum mengunggah bukti pembayaran.</p>
+                  </div>
+                </div>
+              )}
 
               {/* Detail */}
               <div className="mt-6 space-y-4">
