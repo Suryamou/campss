@@ -26,7 +26,14 @@ function ETiketContent() {
         setLoading(false);
       }
     }
+    
     fetchTicket();
+    
+    // Auto-refresh data tiket setiap 5 detik (tanpa reload page)
+    const intervalId = setInterval(fetchTicket, 5000);
+    
+    // Cleanup interval saat komponen ditutup/berpindah halaman
+    return () => clearInterval(intervalId);
   }, [id]);
 
   function formatDateIndo(dateStr: string) {

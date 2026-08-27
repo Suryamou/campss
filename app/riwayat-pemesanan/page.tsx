@@ -109,6 +109,12 @@ export default function RiwayatPemesananPage() {
     }
 
     fetchMyPemesanan();
+    
+    // Auto-refresh data riwayat setiap 5 detik (tanpa reload page)
+    const intervalId = setInterval(fetchMyPemesanan, 5000);
+    
+    // Cleanup interval saat komponen ditutup/berpindah halaman
+    return () => clearInterval(intervalId);
   }, [router]);
 
   const pemesananDitampilkan =
