@@ -751,11 +751,5 @@ function Info({
 }
 
 function getVegetationSlug(name: string) {
-  const normalized = name.toLowerCase();
-  if (normalized.includes("kopi")) return "kopi-arabika";
-  if (normalized.includes("jambu")) return "jambu-air";
-  if (normalized.includes("tembakau")) return "tembakau-temanggung";
-  if (normalized.includes("edelweis")) return "edelweis";
-  if (normalized.includes("cantigi")) return "cemara-gunung";
-  return normalized.trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "vegetasi";
+  return name.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "vegetasi";
 }

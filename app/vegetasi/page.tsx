@@ -35,7 +35,7 @@ export default function VegetasiPage() {
               lokasi: item.lokasi || "Jalur pendakian Gunung Prau",
               manfaat: item.manfaat || "Sebagai bagian dari keanekaragaman hayati.",
               fakta: item.fakta || "Flora pegunungan memiliki adaptasi khusus terhadap cuaca dingin.",
-              slug: item.slug || item.nama.toLowerCase().replaceAll(" ", "-")
+              slug: item.slug || item.nama.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")
             }));
             setDataVegetasi(mappedData);
             setVegetasiAktif(mappedData[0]);

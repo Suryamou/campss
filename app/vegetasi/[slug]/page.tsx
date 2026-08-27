@@ -16,7 +16,6 @@ export default async function VegetasiDetailPage({
   
   try {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://157.10.252.30/api';
-    const storageUrl = apiUrl.replace('/api', '');
     const res = await fetch(`${apiUrl}/vegetasi`, { cache: 'no-store' });
     
     if (res.ok) {
@@ -33,7 +32,7 @@ export default async function VegetasiDetailPage({
           nama: dbItem.nama,
           namaLatin: dbItem.nama_latin || dbItem.namaLatin || "-",
           kategori: dbItem.kategori || dbItem.lokasi || "Flora Gunung Prau",
-          foto: dbItem.foto ? (dbItem.foto.startsWith('http') ? dbItem.foto : `${storageUrl}/storage/${dbItem.foto}`) : "/images/placeholder.jpg",
+          foto: dbItem.foto ? (dbItem.foto.startsWith('http') ? dbItem.foto : `/storage/${dbItem.foto}`) : "/images/placeholder.jpg",
           deskripsi: dbItem.deskripsi || "Tidak ada deskripsi tersedia.",
           peran: dbItem.peran_ekologis || dbItem.peran || "Menjaga keseimbangan ekosistem pegunungan.",
           lokasi: dbItem.lokasi || dbItem.kategori || "Jalur pendakian Gunung Prau",
