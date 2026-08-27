@@ -62,14 +62,14 @@ export default function AdminDashboardPage() {
   ];
 
   return (
-    <div className="p-6">
+    <div className="p-4 md:p-6">
 
       {/* HEADER */}
       <div>
         <p className="text-sm font-bold text-[#17634a]">
           Selamat datang kembali
         </p>
-        <h1 className="mt-1 text-3xl font-bold text-[#073d2b] md:text-4xl">
+        <h1 className="mt-1 text-2xl font-bold text-[#073d2b] md:text-4xl">
           Dashboard
         </h1>
         <p className="mt-2 text-sm text-gray-500">
@@ -78,7 +78,7 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* TOP STATS */}
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 md:mt-8">
         {stats.map((stat, i) => (
           <div
             key={i}

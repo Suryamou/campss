@@ -200,7 +200,72 @@ export default function VerifikasiPembayaranPage() {
 
               </div>
 
-              <div className="overflow-x-auto">
+              {/* MOBILE CARDS */}
+              <div className="divide-y divide-gray-100 lg:hidden">
+
+                {payments.map((payment) => (
+                  <button
+                    key={payment.id}
+                    onClick={() => setSelectedPayment(payment)}
+                    className="block w-full p-4 text-left transition hover:bg-[#fbfdfc]"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="truncate font-semibold text-[#063d2b]">
+                          {payment.id}
+                        </p>
+                        <p className="mt-0.5 truncate text-xs text-gray-400">
+                          {payment.user?.name || "Pendaki CAMPSS"}
+                        </p>
+                      </div>
+
+                      {payment.status_pembayaran === "menunggu" && (
+                        <span className="shrink-0 rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-semibold text-amber-700">
+                          Menunggu
+                        </span>
+                      )}
+                      {payment.status_pembayaran === "diverifikasi" && (
+                        <span className="shrink-0 rounded-full bg-emerald-100 px-2.5 py-1 text-[10px] font-semibold text-emerald-700">
+                          Diverifikasi
+                        </span>
+                      )}
+                      {payment.status_pembayaran === "ditolak" && (
+                        <span className="shrink-0 rounded-full bg-red-100 px-2.5 py-1 text-[10px] font-semibold text-red-700">
+                          Ditolak
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="mt-3 grid grid-cols-2 gap-3">
+                      <div>
+                        <p className="text-[10px] text-gray-400">Tanggal</p>
+                        <p className="mt-0.5 text-xs font-medium text-gray-700">
+                          {payment.tanggal_pendakian}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-gray-400">Pendaki</p>
+                        <p className="mt-0.5 text-xs font-medium text-gray-700">
+                          {payment.jumlah_anggota} orang
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 flex items-center justify-between border-t border-gray-50 pt-3">
+                      <p className="text-sm font-bold text-[#063d2b]">
+                        Rp {Number(payment.total_harga || 0).toLocaleString("id-ID")}
+                      </p>
+                      <span className="text-xs font-semibold text-[#17634a]">
+                        Lihat Detail →
+                      </span>
+                    </div>
+                  </button>
+                ))}
+
+              </div>
+
+              {/* DESKTOP TABLE */}
+              <div className="hidden overflow-x-auto lg:block">
 
                 <table className="w-full min-w-[800px] text-left">
 
