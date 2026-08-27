@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
         destination: `${process.env.BACKEND_URL || 'http://157.10.252.30/api'}/:path*`,
       },
       {
-        source: '/storage_proxy/:path*',
+        source: '/storage/:path*',
         destination: `${(process.env.BACKEND_URL || 'http://157.10.252.30/api').replace('/api', '')}/storage/:path*`,
       },
     ];
