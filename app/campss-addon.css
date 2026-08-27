@@ -1,0 +1,439 @@
+/* ========================================================
+   CAMPSS ADDON — Lokasi, Penjemputan & Floating WhatsApp
+   Prefix: .campss-addon-* (terisolasi dari global CSS)
+   ======================================================== */
+
+/* ---- BASE RESET (scoped) ---- */
+.campss-addon-section *,
+.campss-addon-section *::before,
+.campss-addon-section *::after {
+  box-sizing: border-box;
+}
+
+/* ============================
+   1. SECTION LOKASI BASECAMP
+   ============================ */
+.campss-addon-location {
+  background: #f4faf7;
+  padding: 5rem 1.5rem;
+}
+
+.campss-addon-location__inner {
+  max-width: 80rem;
+  margin: 0 auto;
+}
+
+.campss-addon-location__header {
+  max-width: 36rem;
+}
+
+.campss-addon-location__label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #17634a;
+}
+
+.campss-addon-location__title {
+  margin-top: 0.5rem;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #063d2b;
+  line-height: 1.25;
+}
+
+@media (min-width: 768px) {
+  .campss-addon-location__title {
+    font-size: 2.25rem;
+  }
+}
+
+.campss-addon-location__desc {
+  margin-top: 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.75;
+  color: #6b7280;
+}
+
+.campss-addon-location__grid {
+  display: grid;
+  margin-top: 2.5rem;
+  gap: 1.5rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+  .campss-addon-location__grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Map Card */
+.campss-addon-location__map-card {
+  border-radius: 1rem;
+  overflow: hidden;
+  border: 1px solid #dcece5;
+  background: #fff;
+  box-shadow: 0 4px 24px rgba(6, 61, 43, 0.06);
+}
+
+.campss-addon-location__map-card iframe {
+  display: block;
+  width: 100%;
+  height: 320px;
+  border: 0;
+}
+
+@media (min-width: 768px) {
+  .campss-addon-location__map-card iframe {
+    height: 400px;
+  }
+}
+
+/* Info Card */
+.campss-addon-location__info-card {
+  border-radius: 1rem;
+  border: 1px solid #dcece5;
+  background: #fff;
+  padding: 2rem;
+  box-shadow: 0 4px 24px rgba(6, 61, 43, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.campss-addon-location__info-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.campss-addon-location__info-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.75rem;
+  background: #e5f4ee;
+  flex-shrink: 0;
+}
+
+.campss-addon-location__info-icon svg {
+  width: 1.125rem;
+  height: 1.125rem;
+  color: #063d2b;
+}
+
+.campss-addon-location__info-text h4 {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #17634a;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.campss-addon-location__info-text p {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: #374151;
+  line-height: 1.6;
+}
+
+/* Badge Alamat */
+.campss-addon-location__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #e9f7f1;
+  border: 1px solid #dcece5;
+  border-radius: 0.5rem;
+  padding: 0.625rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #17634a;
+}
+
+.campss-addon-location__badge svg {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
+/* Tombol Eksternal */
+.campss-addon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: none;
+  line-height: 1;
+}
+
+.campss-addon-btn svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.campss-addon-btn--primary {
+  background: #063d2b;
+  color: #fff;
+}
+
+.campss-addon-btn--primary:hover {
+  background: #052f22;
+}
+
+.campss-addon-btn--outline {
+  background: transparent;
+  color: #17634a;
+  border: 1px solid #17634a;
+}
+
+.campss-addon-btn--outline:hover {
+  background: #e9f7f1;
+}
+
+.campss-addon-btn--full {
+  width: 100%;
+}
+
+.campss-addon-btn--maps {
+  background: #fff;
+  color: #063d2b;
+  border: 1px solid #dcece5;
+}
+
+.campss-addon-btn--maps:hover {
+  background: #f4faf7;
+}
+
+.campss-addon-btn--wa {
+  background: #25d366;
+  color: #fff;
+}
+
+.campss-addon-btn--wa:hover {
+  background: #1ebe5b;
+}
+
+/* ============================
+   2. SECTION TITIK PENJEMPUTAN
+   ============================ */
+.campss-addon-pickup {
+  background: #fff;
+  padding: 5rem 1.5rem;
+}
+
+.campss-addon-pickup__inner {
+  max-width: 80rem;
+  margin: 0 auto;
+}
+
+.campss-addon-pickup__header {
+  max-width: 36rem;
+}
+
+.campss-addon-pickup__label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #17634a;
+}
+
+.campss-addon-pickup__title {
+  margin-top: 0.5rem;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #063d2b;
+  line-height: 1.25;
+}
+
+@media (min-width: 768px) {
+  .campss-addon-pickup__title {
+    font-size: 2.25rem;
+  }
+}
+
+.campss-addon-pickup__desc {
+  margin-top: 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.75;
+  color: #6b7280;
+}
+
+.campss-addon-pickup__grid {
+  display: grid;
+  margin-top: 2.5rem;
+  gap: 1.25rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .campss-addon-pickup__grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (min-width: 1024px) {
+  .campss-addon-pickup__grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Pickup Card */
+.campss-addon-pickup__card {
+  border-radius: 1rem;
+  border: 1px solid #dcece5;
+  background: #f8fcfa;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+.campss-addon-pickup__card:hover {
+  box-shadow: 0 8px 30px rgba(6, 61, 43, 0.1);
+  transform: translateY(-2px);
+}
+
+.campss-addon-pickup__card-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  background: #063d2b;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.campss-addon-pickup__card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 0.75rem;
+  background: #e5f4ee;
+  margin-top: 1rem;
+}
+
+.campss-addon-pickup__card-icon svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #063d2b;
+}
+
+.campss-addon-pickup__card-name {
+  margin-top: 0.75rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #063d2b;
+}
+
+.campss-addon-pickup__card-sub {
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.campss-addon-pickup__card-actions {
+  margin-top: auto;
+  padding-top: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* ============================
+   3. FLOATING WHATSAPP
+   ============================ */
+.campss-addon-wa-float {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.75rem;
+}
+
+.campss-addon-wa-float__tooltip {
+  background: #fff;
+  color: #374151;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.5rem 0.875rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateX(8px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+}
+
+.campss-addon-wa-float:hover .campss-addon-wa-float__tooltip {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.campss-addon-wa-float__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.75rem;
+  height: 3.75rem;
+  border-radius: 50%;
+  background: #25d366;
+  color: #fff;
+  box-shadow: 0 4px 24px rgba(37, 211, 102, 0.4);
+  text-decoration: none;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  animation: campss-addon-wa-pulse 2s ease-in-out infinite;
+}
+
+.campss-addon-wa-float__btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 32px rgba(37, 211, 102, 0.55);
+}
+
+.campss-addon-wa-float__btn svg {
+  width: 2rem;
+  height: 2rem;
+}
+
+@keyframes campss-addon-wa-pulse {
+  0%, 100% {
+    box-shadow: 0 4px 24px rgba(37, 211, 102, 0.4);
+  }
+  50% {
+    box-shadow: 0 4px 32px rgba(37, 211, 102, 0.65), 0 0 0 12px rgba(37, 211, 102, 0.08);
+  }
+}
+
+@media (max-width: 640px) {
+  .campss-addon-wa-float {
+    bottom: 1rem;
+    right: 1rem;
+  }
+
+  .campss-addon-wa-float__btn {
+    width: 3.25rem;
+    height: 3.25rem;
+  }
+
+  .campss-addon-wa-float__btn svg {
+    width: 1.625rem;
+    height: 1.625rem;
+  }
+}

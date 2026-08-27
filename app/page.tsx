@@ -5,6 +5,9 @@ import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import Footer from "@/components/Footer";
+import SectionBasecamp from "@/components/SectionBasecamp";
+import SectionPickup from "@/components/SectionPickup";
+import FloatingWA from "@/components/FloatingWA";
 
 type Wisata = {
   nama: string;
@@ -236,6 +239,12 @@ export default function Home() {
           </div>
         </section>
 
+        {/* LOKASI BASECAMP */}
+        <SectionBasecamp />
+
+        {/* TITIK PENJEMPUTAN */}
+        <SectionPickup />
+
         {/* CTA */}
         <section className="bg-white px-6 py-20">
           <div className="mx-auto max-w-4xl text-center">
@@ -362,6 +371,8 @@ export default function Home() {
         )}
 
       </main>
+
+      <FloatingWA />
     </>
   );
 }
