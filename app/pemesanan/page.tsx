@@ -26,6 +26,32 @@ function BookingForm() {
   const router = useRouter();
   const [jumlahPendaki, setJumlahPendaki] = useState(1);
   const selectedDate = searchParams.get("tanggal") || searchParams.get("date") || new Date().toISOString().split("T")[0];
+
+  const [tipePendakian, setTipePendakian] = useState<"tektok" | "camping">("tektok");
+  const [tanggalTurun, setTanggalTurun] = useState(selectedDate);
+
+  const getMinTanggalTurun = (dateStr: string) => {
+    if (!dateStr) return "";
+    const [year, month, day] = dateStr.split("-").map(Number);
+    const d = new Date(year, month - 1, day);
+    d.setDate(d.getDate() + 1);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const dayStr = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${dayStr}`;
+  };
+
+  const getCampingDuration = (startDateStr: string, endDateStr: string) => {
+    if (!startDateStr || !endDateStr) return "";
+    const [sY, sM, sD] = startDateStr.split("-").map(Number);
+    const [eY, eM, eD] = endDateStr.split("-").map(Number);
+    const start = new Date(sY, sM - 1, sD);
+    const end = new Date(eY, eM - 1, eD);
+    const diffTime = end.getTime() - start.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    if (diffDays <= 0) return "1 Hari (Tektok)";
+    return `${diffDays + 1} Hari ${diffDays} Malam`;
+  };
   
   const requestedSchedule = quotaSchedules.find((item) => item.date === selectedDate);
   const selectedSchedule = requestedSchedule || {
@@ -83,6 +109,11 @@ function BookingForm() {
       return;
     }
     
+    if (tipePendakian === "camping" && tanggalTurun <= selectedDate) {
+      setError("Tanggal turun untuk camping harus setelah tanggal naik.");
+      return;
+    }
+    
     if (!agreement) {
       setError("Anda harus menyetujui peraturan pendakian.");
       return;
@@ -99,6 +130,8 @@ function BookingForm() {
       const data = new FormData();
       data.append("jalur_id", "1"); // Default
       data.append("tanggal_naik", selectedDate);
+      data.append("tipe_pendakian", tipePendakian);
+      data.append("tanggal_turun", tanggalTurun);
       data.append("jenis_identitas_ketua", formData.jenis_identitas_ketua);
       data.append("no_identitas_ketua", formData.no_identitas_ketua);
       data.append("dokumen_identitas_ketua", file);
@@ -178,10 +211,93 @@ function BookingForm() {
                   <p className="mt-1 font-semibold text-[#063d2b]">Gunung Prau via Campurejo</p>
                 </div>
                 <div className="rounded-lg bg-[#f4faf7] p-4">
-                  <p className="text-xs text-gray-500">Tanggal Pendakian</p>
+                  <p className="text-xs text-gray-500">Tanggal Naik</p>
                   <p className="mt-1 font-semibold text-[#063d2b]">{selectedSchedule.dateLabel}</p>
                 </div>
               </div>
+
+              {/* Kategori Pendakian Selector */}
+              <div className="mt-6 border-t border-gray-100 pt-5">
+                <label className="block text-sm font-semibold text-[#063d2b] mb-3">Kategori Pendakian</label>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {/* Opsi Tektok */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTipePendakian("tektok");
+                      setTanggalTurun(selectedDate);
+                    }}
+                    className={`flex flex-col text-left p-4 rounded-xl border-2 transition duration-200 cursor-pointer ${
+                      tipePendakian === "tektok"
+                        ? "border-[#17634a] bg-[#f4faf7] shadow-sm"
+                        : "border-gray-200 hover:border-gray-300 bg-white"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between w-full">
+                      <span className="font-bold text-[#063d2b]">Tektok (One Day Hike)</span>
+                      <input
+                        type="radio"
+                        checked={tipePendakian === "tektok"}
+                        readOnly
+                        className="h-4 w-4 accent-[#17634a]"
+                      />
+                    </div>
+                    <span className="mt-2 text-xs text-gray-500 leading-relaxed">
+                      Langsung naik dan turun di hari yang sama tanpa mendirikan tenda/camping.
+                    </span>
+                  </button>
+
+                  {/* Opsi Camping */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTipePendakian("camping");
+                      setTanggalTurun(getMinTanggalTurun(selectedDate));
+                    }}
+                    className={`flex flex-col text-left p-4 rounded-xl border-2 transition duration-200 cursor-pointer ${
+                      tipePendakian === "camping"
+                        ? "border-[#17634a] bg-[#f4faf7] shadow-sm"
+                        : "border-gray-200 hover:border-gray-300 bg-white"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between w-full">
+                      <span className="font-bold text-[#063d2b]">Camping (Menginap)</span>
+                      <input
+                        type="radio"
+                        checked={tipePendakian === "camping"}
+                        readOnly
+                        className="h-4 w-4 accent-[#17634a]"
+                      />
+                    </div>
+                    <span className="mt-2 text-xs text-gray-500 leading-relaxed">
+                      Pendakian menginap di area camp. Wajib menentukan tanggal turun.
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Tanggal Turun (Hanya muncul jika memilih Camping) */}
+              {tipePendakian === "camping" && (
+                <div className="mt-6 border-t border-gray-100 pt-5">
+                  <label className="mb-2 block text-sm font-semibold text-[#063d2b]">Tanggal Turun</label>
+                  <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                    <input
+                      type="date"
+                      required
+                      min={getMinTanggalTurun(selectedDate)}
+                      value={tanggalTurun}
+                      onChange={(e) => setTanggalTurun(e.target.value)}
+                      className="w-full sm:w-auto rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm outline-none focus:border-[#17634a] focus:ring-2 focus:ring-[#17634a]/10"
+                    />
+                    <div className="rounded-lg bg-[#e9f7f1] px-4 py-2 text-sm font-semibold text-[#17634a]">
+                      Durasi: {getCampingDuration(selectedDate, tanggalTurun)}
+                    </div>
+                  </div>
+                  <p className="mt-2 text-xs text-gray-500">
+                    Batas minimal tanggal turun untuk pendakian camping adalah H+1 dari tanggal naik.
+                  </p>
+                </div>
+              )}
             </div>
 
             <div className="rounded-xl border border-[#dcece5] bg-white p-6 shadow-sm">
@@ -324,9 +440,29 @@ function BookingForm() {
                 <span className="text-right font-medium text-[#063d2b]">Campurejo</span>
               </div>
               <div className="flex justify-between gap-4 text-sm">
-                <span className="text-gray-500">Tanggal</span>
+                <span className="text-gray-500">Jenis Pendakian</span>
+                <span className="font-semibold text-[#17634a]">
+                  {tipePendakian === "tektok" ? "Tektok (1 Hari)" : "Camping"}
+                </span>
+              </div>
+              {tipePendakian === "camping" && (
+                <div className="flex justify-between gap-4 text-sm">
+                  <span className="text-gray-500">Durasi Camping</span>
+                  <span className="font-semibold text-[#17634a]">
+                    {getCampingDuration(selectedDate, tanggalTurun)}
+                  </span>
+                </div>
+              )}
+              <div className="flex justify-between gap-4 text-sm">
+                <span className="text-gray-500">Tanggal Naik</span>
                 <span className="font-medium text-[#063d2b]">{selectedSchedule.dateLabel}</span>
               </div>
+              {tipePendakian === "camping" && (
+                <div className="flex justify-between gap-4 text-sm">
+                  <span className="text-gray-500">Tanggal Turun</span>
+                  <span className="font-medium text-[#063d2b]">{formatDateIndo(tanggalTurun)}</span>
+                </div>
+              )}
               <div className="flex justify-between gap-4 text-sm">
                 <span className="text-gray-500">Jumlah Pendaki</span>
                 <span className="font-medium text-[#063d2b]">{jumlahPendaki} orang</span>
