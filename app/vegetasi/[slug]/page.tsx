@@ -4,10 +4,7 @@ import { notFound } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import MarkVegetationLearned from "@/components/MarkVegetationLearned";
 import { dataVegetasi } from "@/lib/vegetasi";
-
-export function generateStaticParams() {
-  return dataVegetasi.map((item) => ({ slug: item.slug }));
-}
+import Info from "@/components/Info";
 
 export default async function VegetasiDetailPage({
   params,
@@ -15,7 +12,46 @@ export default async function VegetasiDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const vegetasi = dataVegetasi.find((item) => item.slug === slug);
+  
+  let vegetasi = null;
+  
+  try {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://157.10.252.30/api';
+    const storageUrl = apiUrl.replace('/api', '');
+    const res = await fetch(`${apiUrl}/vegetasi`, { cache: 'no-store' });
+    
+    if (res.ok) {
+      const json = await res.json();
+      const items = json.data || [];
+      const dbItem = items.find((i: any) => {
+        const itemSlug = i.slug || i.nama.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+        return itemSlug === slug;
+      });
+      
+      if (dbItem) {
+        vegetasi = {
+          slug: dbItem.slug || dbItem.nama.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""),
+          nama: dbItem.nama,
+          namaLatin: dbItem.nama_latin || dbItem.namaLatin || "-",
+          kategori: dbItem.kategori || dbItem.lokasi || "Flora Gunung Prau",
+          foto: dbItem.foto ? (dbItem.foto.startsWith('http') ? dbItem.foto : `${storageUrl}/storage/${dbItem.foto}`) : "/images/placeholder.jpg",
+          deskripsi: dbItem.deskripsi || "Tidak ada deskripsi tersedia.",
+          peran: dbItem.peran_ekologis || dbItem.peran || "Menjaga keseimbangan ekosistem pegunungan.",
+          lokasi: dbItem.lokasi || dbItem.kategori || "Jalur pendakian Gunung Prau",
+          manfaat: dbItem.manfaat || "Sebagai bagian dari keanekaragaman hayati.",
+          fakta: dbItem.fakta_menarik || dbItem.fakta || "Flora pegunungan memiliki adaptasi khusus.",
+          ciriCiri: dbItem.ciri_ciri ? JSON.parse(dbItem.ciri_ciri) : ["Bentuk adaptasi unik flora pegunungan"]
+        };
+      }
+    }
+  } catch (error) {
+    console.error("Gagal mengambil data vegetasi dari API", error);
+  }
+
+  // Fallback ke data statis jika tidak ada di database
+  if (!vegetasi) {
+    vegetasi = dataVegetasi.find((item) => item.slug === slug);
+  }
 
   if (!vegetasi) notFound();
 
