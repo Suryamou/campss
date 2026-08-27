@@ -37,7 +37,7 @@ export default function KelolaVegetasiPage() {
           habitat: item.kategori || item.lokasi || "-",
           description: item.deskripsi,
           role: item.peran_ekologis,
-          image: item.foto ? (item.foto.startsWith("http") ? item.foto : `/storage_proxy/${item.foto}`) : "/images/placeholder.jpg",
+          image: item.foto ? (item.foto.startsWith("http") ? item.foto : `/storage/${item.foto}`) : "/images/placeholder.jpg",
           qrCode: `VEG-CAMPSS-${String(item.id).padStart(3, "0")}`,
           status: "AKTIF",
         }));
