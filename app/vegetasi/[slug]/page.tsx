@@ -4,7 +4,6 @@ import { notFound } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import MarkVegetationLearned from "@/components/MarkVegetationLearned";
 import { dataVegetasi } from "@/lib/vegetasi";
-import Info from "@/components/Info";
 
 export default async function VegetasiDetailPage({
   params,
